@@ -1,0 +1,3 @@
+# LaTeX intermediate files
+__pycache__/
+MNIST/
