@@ -1,0 +1,135 @@
+% math_framework.tex
+
+\section{Mathematical Framework}
+\label{sec:math_framework}
+
+In this section, we establish the mathematical foundation connecting neural networks to nearest neighbor methods through the Mahalanobis distance and principal component analysis (PCA). We demonstrate how linear layers with absolute value activations can approximate distances in the feature space. This theoretical framework provides a starting point for understanding the behavior of these networks, subject to empirical validation and potential refinement.
+
+\subsection{k-Means and Gaussian Mixture Models}
+In nearest neighbor classification, algorithms such as k-means use distance metrics to identify the feature mean that is closest to a data point. Using nearest neighbors, k-means partitions the data space into Voronoi cells centered on cluster centroids \cite{macqueen1967methods, hastie2009elements}. In many datasets, these Voronoi cells tend to be sparsely populated, with only narrow regions of data represented. This sparsity can result in the false positives of randomly sampled or unobserved points. These points can exist in sparsely sampled, or empty areas, of the Voronoi cell. In other words, they may be assigned to clusters even though they fall outside the observed distribution of the data \cite{aurenhammer1991voronoi, lloyd1982leastsquares}.
+
+To address this issue, one can extend k-means by incorporating a covariance matrix for each cluster, transforming it into a Gaussian mixture model (GMM) \cite{bishop2006pattern, mclachlan2000finitemixture}. By leveraging the Mahalanobis distance \cite{mahalanobis1936generalized, demaesschalck2000mahalanobis}, which accounts for both the cluster mean and covariance, distances are adjusted based on the distribution's variance, effectively standardizing the space along the principal components of the data. This enables the model to better identify points that are unlikely to belong to any cluster. This concept naturally leads to the formulation of the multivariate Gaussian, where the covariance matrix governs the scaling of distances.
+
+\subsection{Multivariate Gaussian Distribution}
+
+A multivariate Gaussian (normal) distribution describes a $d$-dimensional random vector $\mathbf{x} \in \mathbb{R}^d$ with a mean vector $\boldsymbol{\mu} \in \mathbb{R}^d$ and a covariance matrix $\boldsymbol{\Sigma} \in \mathbb{R}^{d \times d}$ \citep{bishop2006pattern}. The probability density function (pdf) is given by:
+
+\begin{equation}
+\label{eq:multivariate_gaussian}
+f(\mathbf{x}) = \frac{1}{(2\pi)^{d/2} |\boldsymbol{\Sigma}|^{1/2}} \exp\left( -\frac{1}{2} (\mathbf{x} - \boldsymbol{\mu})^\top \boldsymbol{\Sigma}^{-1} (\mathbf{x} - \boldsymbol{\mu}) \right),
+\end{equation}
+
+where $|\boldsymbol{\Sigma}|$ denotes the determinant of the covariance matrix, and $\boldsymbol{\Sigma}^{-1}$ is its inverse.
+
+\subsection{Mahalanobis Distance and Principal Components}
+
+The Mahalanobis distance is a measure of the distance between a point $\mathbf{x}$ and the mean $\boldsymbol{\mu}$ of a distribution, taking into account the covariance of the data \citep{mahalanobis1936generalized}. It is defined as:
+
+\begin{equation}
+\label{eq:mahalanobis_distance}
+D_M(\mathbf{x}) = \sqrt{ (\mathbf{x} - \boldsymbol{\mu})^\top \boldsymbol{\Sigma}^{-1} (\mathbf{x} - \boldsymbol{\mu}) }
+\end{equation}
+
+This distance accounts for the variance along each principal component (direction) in the data. Furthermore, by utilizing the inverse covariance matrix, the Mahalanobis distance facilitates data whitening \citep{bishop2006pattern}. This process transforms the original data into a new set where the variables are uncorrelated and have unit variance, effectively converting the data into a spherical Gaussian distribution.
+
+By performing eigenvalue decomposition on the covariance matrix $\boldsymbol{\Sigma}$, we obtain:
+
+\begin{equation}
+\boldsymbol{\Sigma} = \mathbf{V} \boldsymbol{\Lambda} \mathbf{V}^\top,
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $\mathbf{V} = [\mathbf{v}_1, \mathbf{v}_2, \dots, \mathbf{v}_d]$ is a matrix whose columns are the orthogonal unit eigenvectors $\mathbf{v}_i$ of $\boldsymbol{\Sigma}$.
+    \item $\boldsymbol{\Lambda} = \text{diag}(\lambda_1, \lambda_2, \dots, \lambda_d)$ is a diagonal matrix of the corresponding eigenvalues $\lambda_i$, representing the variance along each eigenvector \citep{jolliffe2002principal}.
+\end{itemize}
+
+Using the eigenvalue decomposition, the Mahalanobis distance can be rewritten as:
+
+\begin{equation}
+\label{eq:mahalanobis_pca}
+D_M(\mathbf{x}) = \sqrt{ \sum_{i=1}^d \frac{ (\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu}))^2 }{ \lambda_i } }
+\end{equation}
+
+This expression reveals that the Mahalanobis distance is calculated by projecting the data onto each principal component (the eigenvectors of the covariance matrix), scaling these projections by the inverse square root of the corresponding eigenvalues. Specifically, it computes the Euclidean (\ell_2) norm of these scaled, one-dimensional components. 
+
+Thus, each projection of the point onto a principal component can be represented by the standardized form of the data in that direction, as shown below:
+
+\begin{equation}
+    \label{eq:y_definition}
+    y = \frac{ \mathbf{v}^\top (\mathbf{x} - \boldsymbol{\mu}) }{ \sqrt{\lambda} }
+    \end{equation}
+
+The Mahalanobis distance along each principal component is represented by the absolute value of the standardized coordinate along that component:
+
+\begin{equation}
+    \label{eq:single_pc_distance}
+    D_{M, \mathbf{v}}(\mathbf{x}) = \left| \frac{ \mathbf{v}^\top (\mathbf{x} - \boldsymbol{\mu}) }{ \sqrt{\lambda} } \right|
+    \end{equation}
+    
+This simplifies the Mahalanobis distance for a single principal component, highlighting how each direction contributes independently to the overall distance.
+
+\subsection{Connection to Neural Networks}
+
+We observe that Equation~\eqref{eq:y_definition} resembles the operation of a linear layer in a neural network \citep{goodfellow2016deep}. By defining:
+
+\begin{align}
+\label{eq:w_and_b_definitions}
+\mathbf{W} &= \frac{ \mathbf{v}^\top }{ \sqrt{\lambda} }, \\
+b &= - \frac{ \mathbf{v}^\top \boldsymbol{\mu} }{ \sqrt{\lambda} },
+\end{align}
+
+we can rewrite Equation~\eqref{eq:y_definition} as:
+
+\begin{equation}
+\label{eq:neural_network_equation}
+y = \mathbf{W} \mathbf{x} + b.
+\end{equation}
+
+This equation is identical to that of a linear layer with weights $\mathbf{W}$ and bias $b$. Linear layers in neural networks perform the same operation as PCA-based data whitening, provided the weights are aligned with the principal components. When combined with the absolute value function, they produce a distance metric from a mean value along a specific orientation.
+
+\subsection{L1 Norm Approximation of Mahalanobis Distance}
+
+We approximate the Mahalanobis distance using the $\ell_1$ norm. This avoids the computational challenges introduced by squared terms in traditional distance calculations, such as numerical overflow and vanishing gradients \citep{lecun2012efficient}. This approximation is computationally simple and integrates well with existing neural network architectures.
+
+The Mahalanobis distance can be approximated by summing the absolute values of the standardized coordinates along each principal component:
+
+\begin{equation}
+\label{eq:l1_approximation}
+D_{M, \text{approx}}(\mathbf{x}) = \sum_{i=1}^d |\mathbf{W}_i \mathbf{x} + b_i|,
+\end{equation}
+
+where $\mathbf{W}_i$ and $b_i$ correspond to the principal components' weights and biases.
+
+\subsubsection{Advantages of L1 Norm Approximation}
+\begin{itemize}
+    \item \textbf{Computational Efficiency}: Absolute values are less intensive than squaring and taking square roots \citep{hastie2009elements}.
+    \item \textbf{Improved Gradient Flow}: The absolute value function avoids the vanishing gradient problem \citep{glorot2010understanding}.
+    \item \textbf{Alignment with Neural Networks}: Linear layers followed by absolute value activation mirror standard architectures \citep{goodfellow2016deep}.
+\end{itemize}
+
+Although the $\ell_1$ norm approximation differs from the true Mahalanobis distance, it offers a practical approach that balances computational efficiency with the ability to capture meaningful distance information, particularly in the context of neural network architectures designed for high-dimensional data.
+
+The absolute value function shares some similarities with ReLU, but it preserves both positive and negative deviations from the decision boundary, making it a more convenient choice for distance measurement \citep{nair2010rectified}. However, ReLU can preserve similar information by offsetting the linear node's decision boundary from the cluster mean. While the absolute value function directly converts a coordinate from the range \([-d, +d]\), ReLU expresses that coordinate as \([0, 2d]\), with the subsequent layer effectively mapping this back to \([-d, +d]\) by adjusting the bias. This allows ReLU networks to capture the same essential distance information as Abs, even though the details differ. ReLU networks can still maintain the key principles of distance measurement. This paper focuses on the absolute value evaluation function for ease of analysis.
+
+\subsection{Neural Networks Can Approximate Nearest Neighbors}
+
+The $\ell_1$ approximation of the Mahalanobis distance in Equation~\eqref{eq:l1_approximation} suggests that neural networks with linear layers and either Abs or ReLU activations can compute distances between inputs and learned prototypes (cluster centers). Each neuron may approximate the distance along a learned direction, potentially related to a principal component.
+
+This perspective implies that neural networks can perform a form of nearest neighbor search in the feature space. The smaller the output $y$, the closer the input $\mathbf{x}$ is to the corresponding cluster center represented by the neuron.
+
+\subsection{Implications for Model Interpretation}
+
+Understanding neurons as computing approximated Mahalanobis distances offers a fresh perspective on interpreting neural network behavior, particularly in relation to expected values:
+
+\begin{itemize}
+    \item \textbf{Feature Learning}: Each neuron can align with a principal direction in the data, capturing significant variance along that axis. This alignment would allow the network to learn a compact representation of the input space, effectively performing dimensionality reduction.
+  
+    \item \textbf{Prototype-Based Clustering}: The network naturally groups inputs based on their proximity to learned prototypes. With Abs activations, these prototypes correspond to cluster means, providing a clear statistical interpretation of the network's organization of the input space.
+
+    \item \textbf{Interpretability and Activation Functions}: The choice of activation function impacts interpretability. Abs activations center decision boundaries on cluster means, facilitating direct interpretation of neuron behavior. In contrast, ReLU shifts these boundaries, requiring additional complexity to represent the same information and potentially obscuring the underlying statistical structure \citep{zeiler2014visualizing}.
+\end{itemize}
+
+\subsection{From Theory to Practice}
+
+With this theoretical foundation established, we now turn to a series of experiments designed to validate our theory and demonstrate how neural networks with linear layers and absolute value activations can approximate nearest neighbor models in practice. These experiments will test our mathematical framework on both synthetic and real-world datasets, providing empirical support and refinement of our interpretation of neural networks as distance-based classifiers.

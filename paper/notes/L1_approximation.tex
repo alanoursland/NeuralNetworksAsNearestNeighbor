@@ -1,0 +1,78 @@
+\subsection{L1 Norm Approximation of the Mahalanobis Distance}
+
+In this section, we propose an approximation of the Mahalanobis distance using the $\ell_1$ norm. This approach not only simplifies the computational complexity but also integrates seamlessly with standard neural network architectures, leveraging linear layers and activation functions.
+
+\subsubsection{Motivation for the L1 Norm Approximation}
+
+The traditional computation of the Mahalanobis distance involves squared terms, as seen in Equation~\eqref{eq
+}. While accurate, incorporating squared terms into neural networks can introduce computational challenges:
+
+\begin{itemize} \item \textbf{Numerical Overflow}: Squaring large input values can lead to numerical overflow, causing instability in training \cite{goldberg1991neural}. \item \textbf{Vanishing Gradient Problem}: The gradients of squared terms can become very small for inputs near zero, hindering effective backpropagation and slowing down learning \cite{hochreiter1998vanishing}. \end{itemize}
+
+To mitigate these issues, we approximate the Mahalanobis distance using the $\ell_1$ norm, replacing squared terms with absolute values. This approximation retains the essence of distance measurement while enhancing computational stability.
+
+\subsubsection{Neural Network Implementation Using Absolute Value Activation}
+
+We redefine the standardized coordinate along each principal component using the absolute value:
+
+\begin{equation} \label{eq
+} y_i = \left| \frac{ \mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu}) }{ \sqrt{\lambda_i} } \right| = | \mathbf{W}_i \mathbf{x} + b_i |, \end{equation}
+
+where:
+
+\begin{align} \label{eq
+} \mathbf{W}_i &= \frac{ \mathbf{v}_i^\top }{ \sqrt{\lambda_i} }, \ b_i &= - \frac{ \mathbf{v}_i^\top \boldsymbol{\mu} }{ \sqrt{\lambda_i} }. \end{align}
+
+Here, each $\mathbf{W}_i$ represents the weights of a neuron corresponding to principal component $\mathbf{v}_i$, and $b_i$ is the associated bias. The operation $\mathbf{W}_i \mathbf{x} + b_i$ is a linear transformation, analogous to a linear layer in a neural network.
+
+Applying the absolute value function mimics the effect of measuring the distance along each principal component without concern for direction:
+
+\begin{equation} \label{eq
+} y_i = | \mathbf{W}_i \mathbf{x} + b_i |. \end{equation}
+
+\subsubsection{Approximating the Mahalanobis Distance with the L1 Norm}
+
+By summing the absolute values of the standardized coordinates, we approximate the Mahalanobis distance using the $\ell_1$ norm:
+
+\begin{equation} \label{eq
+} D_{M, \text{approx}}(\mathbf{x}) = \sum_{i=1}^d y_i = \sum_{i=1}^d | \mathbf{W}_i \mathbf{x} + b_i |. \end{equation}
+
+This approximation simplifies the computation by avoiding squared terms and provides a piecewise linear operation conducive to neural network training.
+
+\subsubsection{Advantages of the L1 Norm Approximation}
+
+The $\ell_1$ norm approximation offers several benefits:
+
+\begin{itemize} \item \textbf{Computational Efficiency}: Absolute value operations are less computationally intensive than squaring and taking square roots. \item \textbf{Reduced Numerical Issues}: Avoiding squared terms mitigates the risk of numerical overflow for large input values. \item \textbf{Improved Gradient Flow}: The derivative of the absolute value function is constant almost everywhere, reducing vanishing gradient problems during backpropagation \cite{hochreiter1998vanishing}. \item \textbf{Alignment with Neural Architectures}: Linear layers followed by activation functions like absolute value are standard in neural networks, facilitating implementation and optimization. \end{itemize}
+
+\subsubsection{Relation to ReLU Activation}
+
+While the absolute value function and the Rectified Linear Unit (ReLU) share similarities, they have distinct behaviors:
+
+\begin{align} \text{Absolute Value}: \quad & y = | x |, \ \text{ReLU}: \quad & y = \max(0, x). \end{align}
+
+The absolute value function reflects negative inputs to positive, preserving the magnitude of deviation in both directions from the mean. In contrast, ReLU zeros out negative inputs, potentially discarding valuable information about deviations below the mean. By using the absolute value function, we ensure that deviations on both sides contribute equally to the distance metric.
+
+\subsubsection{Integration into Neural Networks}
+
+The proposed approximation can be integrated into a neural network as follows:
+
+\begin{enumerate} \item \textbf{First Layer (Linear Transformation)}: Apply a linear layer with weights $\mathbf{W}_i$ and biases $b_i$ for each principal component. \item \textbf{Activation Function}: Use the absolute value activation function to obtain $y_i = | \mathbf{W}i \mathbf{x} + b_i |$. \item \textbf{Aggregation Layer}: Sum the outputs $y_i$ to compute the approximate Mahalanobis distance $D{M, \text{approx}}(\mathbf{x})$. \end{enumerate}
+
+This architecture mirrors standard neural network designs, enabling the use of existing optimization algorithms and software frameworks.
+
+\subsubsection{Interpretation and Limitations}
+
+While the $\ell_1$ norm approximation simplifies computation and aligns with neural network practices, it is an approximation of the true Mahalanobis distance. The $\ell_1$ norm measures the "Manhattan" distance in the standardized feature space, which may differ from the Euclidean distance captured by the Mahalanobis metric. However, in high-dimensional spaces, the $\ell_1$ and $\ell_2$ norms can exhibit similar behavior \cite{indyk1998approximate}, making the approximation reasonable for many applications.
+
+\subsubsection{Conclusion}
+
+By approximating the Mahalanobis distance with the $\ell_1$ norm using linear layers and absolute value activations, we create a neural network framework that efficiently measures distances in the feature space. This approach addresses computational challenges associated with squared terms and integrates naturally with standard neural network architectures, paving the way for practical implementations of distance-based learning methods.
+
+\begin{thebibliography}{9} \bibitem{glorot2010understanding} X. Glorot and Y. Bengio, "Understanding the difficulty of training deep feedforward neural networks," in \textit{Proceedings of the Thirteenth International Conference on Artificial Intelligence and Statistics}, 2010, pp. 249–256.
+
+\bibitem{hochreiter1998vanishing} S. Hochreiter, "The vanishing gradient problem during learning recurrent neural nets and problem solutions," \textit{International Journal of Uncertainty, Fuzziness and Knowledge-Based Systems}, vol. 6, no. 02, pp. 107–116, 1998.
+
+\bibitem{goldberg1991neural} D. E. Goldberg, \textit{Neural networks, optimization, and optimization of neural networks}. John Wiley & Sons, Inc., 1991.
+
+\bibitem{indyk1998approximate} P. Indyk and R. Motwani, "Approximate nearest neighbors: towards removing the curse of dimensionality," in \textit{Proceedings of the thirtieth annual ACM symposium on Theory of computing}, 1998, pp. 604–613. \end{thebibliography}

@@ -1,0 +1,120 @@
+```latex
+\section{Experiment 1: Approximating Mahalanobis Distance with Linear Nodes}
+
+\subsection{Introduction}
+
+The primary objective of this experiment is to evaluate whether single linear nodes with ReLU or Abs activations can approximate Mahalanobis distances in a 2D Gaussian distribution with a non-diagonal covariance matrix. According to our theoretical framework, we expect that single linear nodes with Abs activations will align closely with the principal components of the distribution, thereby providing a better approximation of the Mahalanobis distance compared to ReLU activations. This alignment should result in \emph{Coherent} solutions that reflect the statistical properties of the data, as opposed to \emph{Adhoc} solutions that approximate the distance function through other means.
+
+\subsection{Methodology}
+
+We generated a 2D Gaussian dataset with mean vector $\boldsymbol{\mu} = [0, 0]^\top$ and covariance matrix $\boldsymbol{\Sigma}$ characterized by non-zero off-diagonal elements to ensure a rotated elliptical shape. Specifically, we used:
+
+\begin{equation}
+\label{eq:covariance_matrix}
+\boldsymbol{\Sigma} = \begin{bmatrix} \sigma_x^2 & \rho \sigma_x \sigma_y \\ \rho \sigma_x \sigma_y & \sigma_y^2 \end{bmatrix},
+\end{equation}
+
+where $\sigma_x = 3$, $\sigma_y = 1$, and $\rho = 0.8$. We sampled $N = 1000$ data points from this distribution.
+
+Each model consisted of a single linear neuron with weights $\mathbf{W} \in \mathbb{R}^{1 \times 2}$ initialized using Xavier initialization, followed by either a ReLU or Abs activation function. Biases were set as:
+
+\begin{equation}
+b = -\mathbf{W} \mathbf{z},
+\end{equation}
+
+where $\mathbf{z} \in \mathbb{R}^2$ is a vector uniformly sampled from $[-8, 8]^2$. This initialization ensures that the initial decision boundary passes through the point $\mathbf{z}$, providing a diverse set of starting conditions to study convergence properties.
+
+Models were trained to predict the true Mahalanobis distances of the data points to the mean $\boldsymbol{\mu}$, computed using Equation~\eqref{eq:mahalanobis_distance}:
+
+\begin{equation}
+D_M(\mathbf{x}) = \sqrt{ (\mathbf{x} - \boldsymbol{\mu})^\top \boldsymbol{\Sigma}^{-1} (\mathbf{x} - \boldsymbol{\mu}) }.
+\end{equation}
+
+The loss function used was Mean Squared Error (MSELoss), and optimization was performed using Stochastic Gradient Descent (SGD) with a learning rate of 0.001 and no momentum. We trained a total of 300 models for each activation function to ensure statistical significance.
+
+Table~\ref{tab:config_params} summarizes the configuration parameters.
+
+\begin{table}[h]
+\centering
+\caption{Configuration Parameters}
+\label{tab:config_params}
+\begin{tabular}{ll}
+\hline
+Parameter & Value \\
+\hline
+Activation Functions & ReLU, Abs \\
+Loss Function & Mean Squared Error (MSELoss) \\
+Optimizer & SGD \\
+Learning Rate & 0.001 \\
+Momentum & 0.0 \\
+Weight Initialization & Xavier Initialization \\
+Bias Initialization & $b = -\mathbf{W} \mathbf{z}$, $\mathbf{z} \sim \mathcal{U}([-8,8]^2)$ \\
+Number of Models & 300 per activation function \\
+Number of Data Points & 1000 \\
+Mean Vector $\boldsymbol{\mu}$ & $[0, 0]^\top$ \\
+Covariance Matrix $\boldsymbol{\Sigma}$ & See Equation~\eqref{eq:covariance_matrix} \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Results and Discussion}
+
+\subsubsection{Mixture of Principal Components}
+
+Our theoretical framework predicts that single linear nodes with Abs activations will align closely with the principal components of the data distribution, thereby providing an effective approximation of the Mahalanobis distance. In contrast, ReLU activations are expected to be less effective due to their asymmetry and inability to capture deviations on both sides of the mean.
+
+% Figure~\ref{fig:converged_states2} illustrates the converged states for both ReLU and Abs activations. The black ellipse represents the 2D Gaussian distribution, the blue arrows indicate the principal components obtained via eigenvalue decomposition of the covariance matrix $\boldsymbol{\Sigma}$, and the red lines show the learned decision boundaries (defined by $\mathbf{W} \mathbf{x} + b = 0$) after training.
+
+% \begin{figure}[h]
+% \centering
+% \includegraphics[width=\textwidth]{converged_states_placeholder.png}
+% \caption{Converged states for ReLU (left) and Abs (right) activations. The black ellipse represents the 2D Gaussian distribution, red lines show the learned decision boundaries, and blue arrows indicate the principal components.}
+% \label{fig:converged_states2}
+% \end{figure}
+
+As predicted, models with Abs activations tended to align their weight vectors with the principal components of the distribution, centering their decision boundaries near the data mean $\boldsymbol{\mu}$. However, rather than aligning perfectly with a single principal component, the learned weights represent a mixture of principal components, which can be expressed as:
+
+\begin{equation}
+\label{eq:mixture_pcs}
+\mathbf{W} = \sum_{i=1}^d \alpha_i \mathbf{v}_i^\top,
+\end{equation}
+
+where $\mathbf{v}_i$ are the principal component vectors, and $\alpha_i$ are coefficients derived from the learned weights. This mixture allows the models to capture variance in multiple directions, providing a more accurate $\ell_1$ approximation of the Mahalanobis distance than would be achieved by considering a single principal component.
+
+In contrast, models with ReLU activations showed less consistent alignment with the principal components and often produced decision boundaries that did not center on the data mean, leading to less effective approximations of the Mahalanobis distance.
+
+\subsubsection{Solution Classes: Coherent vs.\ Adhoc}
+
+We classified the learned solutions into two categories based on the distance of the decision boundary to the true data mean $\boldsymbol{\mu}$:
+
+\begin{itemize}
+    \item \textbf{Coherent Solutions}: Models where the decision boundary intersects the data mean, reflecting the statistical properties of the distribution.
+    \item \textbf{Adhoc Solutions}: Models where the decision boundary does not intersect the data mean but still approximate the target distance function through other means.
+\end{itemize}
+
+Figure~\ref{fig:error_histograms} presents error histograms for both activation functions. The horizontal axis represents the Mean Squared Error (MSE) between the predicted and true Mahalanobis distances, while the vertical axis indicates the number of models achieving that error level.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\textwidth]{error_histograms_placeholder.png}
+\caption{Error histograms for ReLU (left) and Abs (right) activations. Peaks are labeled according to solution classes: Coherent and Adhoc.}
+\label{fig:error_histograms}
+\end{figure}
+
+For Abs activations, Coherent solutions consistently achieved lower errors compared to Adhoc solutions, confirming our theoretical prediction that Abs activations are well-suited for approximating symmetric distance measures like the Mahalanobis distance. In contrast, for ReLU activations, Adhoc solutions often resulted in lower errors than Coherent ones, highlighting a limitation of ReLU in capturing deviations on both sides of the mean due to its asymmetry.
+
+\subsubsection{Abs Activation Behavior and Role of Initialization}
+
+Our findings also emphasize the importance of initialization for models with Abs activations. Proper initialization ensures that the initial decision boundary intersects the data clusters, allowing the model to converge to a Coherent solution aligned with the principal components. When the initial decision boundary did not intersect the data clusters, models with Abs activations sometimes behaved similarly to those with ReLU activations, leading to less effective approximations.
+
+This observation confirms our theoretical expectation that initialization plays a crucial role in enabling Abs activations to fulfill their potential in approximating Mahalanobis distances. It suggests that a targeted initialization strategy could further enhance the performance of models with Abs activations.
+
+\subsection{Conclusion and Next Steps}
+
+This experiment provides empirical evidence supporting our theoretical framework: single linear nodes with Abs activations can approximate Mahalanobis distances by learning a mixture of principal components and centering their decision boundaries near the data mean. The alignment with the principal components and the dependence on proper initialization confirm our theoretical predictions.
+
+In contrast, models with ReLU activations are less consistent in approximating the Mahalanobis distance, often resulting in Adhoc solutions that do not reflect the statistical properties of the data.
+
+These findings motivate the development of a novel initialization strategy to improve the performance and Coherence of models with Abs activations, which we explore in the next experiment.
+
+```
