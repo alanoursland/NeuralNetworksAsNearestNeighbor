@@ -1,0 +1,55 @@
+% oursland2024_nn_as_nn.tex
+
+\documentclass[11pt]{article}
+
+% Packages
+\usepackage{amsmath, amssymb}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{authblk}
+\usepackage{caption}
+\usepackage{subcaption}  % For subfigures
+
+% Geometry
+\geometry{
+    a4paper,
+    left=25mm,
+    right=25mm,
+    top=25mm,
+    bottom=25mm,
+}
+
+% Title and Author
+\title{Neural Networks as Nearest Neighbors}
+\author{Alan Oursland}
+\affil{Independent Researcher}
+\date{September 2024}
+
+\begin{document}
+
+\maketitle
+
+% Abstract
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+ 
+% Sections
+\input{sections/introduction}
+\input{sections/math_framework}
+\input{sections/experiment1}
+\input{sections/experiment2}
+\input{sections/interpretation}
+\input{sections/experiment3}
+\input{sections/discussion}
+\input{sections/conclusion}
+
+% References
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
+
