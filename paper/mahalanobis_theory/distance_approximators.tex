@@ -1,0 +1,127 @@
+% distance_approximators.tex
+
+\section{Distance Approximators}
+\label{sec:distance_approximators}
+
+In this section, we explore how different activation functions within neural networks can approximate distance metrics, specifically the Mahalanobis distance. We focus on two activation functions: Absolute Value (Abs) and Rectified Linear Unit (ReLU). By analyzing their mathematical properties and interactions with linear layers, we elucidate their roles in approximating distance-based operations and their implications for neural network behavior and interpretability.
+
+\subsection{Absolute Value (Abs) Activation as a Distance Approximator}
+
+The Absolute Value activation function is inherently suited for approximating distance metrics due to its symmetric nature around the origin. Defined as:
+
+\begin{equation}
+\text{Abs}(y) = |y|,
+\end{equation}
+
+the Abs activation preserves both positive and negative deviations from a central point, effectively capturing the magnitude of differences without regard to direction. When applied to the output of a linear layer, the Abs function transforms each component of the output vector $\mathbf{y}$ as follows:
+
+\begin{equation}
+\mathbf{a} = \text{Abs}(\mathbf{y}) = |\mathbf{y}|.
+\end{equation}
+
+Substituting the expression for $\mathbf{y}$ from the linear transformation:
+
+\begin{equation}
+a_i = \left| \mathbf{w}_i^\top \mathbf{x} + b_i \right| = \left| \frac{\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu})}{\sqrt{\lambda_i}} \right|.
+\end{equation}
+
+Here, each activated output $a_i$ represents the scaled absolute projection of the input $\mathbf{x}$ onto the $i$-th principal component $\mathbf{v}_i$, normalized by the variance $\lambda_i$. Summing these absolute values across all principal components provides an approximation of the Mahalanobis distance:
+
+\begin{equation}
+D_M(\mathbf{x}) \approx \sum_{i=1}^d a_i = \sum_{i=1}^d \left| \frac{\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu})}{\sqrt{\lambda_i}} \right|.
+\end{equation}
+
+\subsubsection{Advantages of Abs Activation}
+
+\begin{itemize}
+    \item \textbf{Symmetry}: Abs preserves information from both sides of the decision boundary, ensuring that deviations in either direction contribute to the distance approximation.
+    \item \textbf{Simplicity}: The Abs function is computationally efficient and straightforward to integrate into existing network architectures.
+    \item \textbf{Gradient Flow}: Unlike some non-linear activations, Abs maintains a consistent gradient, facilitating stable training dynamics.
+\end{itemize}
+
+\subsubsection{Limitations of Abs Activation}
+
+\begin{itemize}
+    \item \textbf{Non-Differentiability at Zero}: The Abs function is non-differentiable at zero, which can introduce challenges during gradient-based optimization.
+    \item \textbf{Magnitude Scaling}: While Abs captures the magnitude of deviations, it does not inherently account for the directionality beyond absolute values, potentially limiting nuanced distance representations.
+\end{itemize}
+
+\subsection{Rectified Linear Unit (ReLU) Activation as a Distance Approximator}
+
+The Rectified Linear Unit (ReLU) activation function, defined as:
+
+\begin{equation}
+\text{ReLU}(y) = \max(0, y),
+\end{equation}
+
+introduces asymmetry by zeroing out negative inputs while preserving positive deviations. When applied to the output of a linear layer, ReLU transforms each component as follows:
+
+\begin{equation}
+\mathbf{a} = \text{ReLU}(\mathbf{y}) = \max(0, \mathbf{y}).
+\end{equation}
+
+Substituting the linear transformation:
+
+\begin{equation}
+a_i = \max\left(0, \frac{\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu})}{\sqrt{\lambda_i}} \right).
+\end{equation}
+
+\subsubsection{Approximating Distance with ReLU}
+
+To approximate the Mahalanobis distance using ReLU, we can employ paired ReLU units to capture both positive and negative deviations:
+
+\begin{align}
+a_i^+ &= \text{ReLU}\left( \frac{\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu})}{\sqrt{\lambda_i}} \right), \\
+a_i^- &= \text{ReLU}\left( -\frac{\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu})}{\sqrt{\lambda_i}} \right).
+\end{align}
+
+By summing these paired activations, we approximate the absolute value:
+
+\begin{equation}
+a_i = a_i^+ + a_i^- = \left| \frac{\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu})}{\sqrt{\lambda_i}} \right|.
+\end{equation}
+
+Thus, a pair of ReLU units can collectively approximate the behavior of the Abs activation, enabling the network to capture both positive and negative deviations required for distance approximation.
+
+\subsubsection{Advantages of ReLU Activation}
+
+\begin{itemize}
+    \item \textbf{Computational Efficiency}: ReLU is computationally simple and benefits from efficient implementation on modern hardware.
+    \item \textbf{Mitigation of Vanishing Gradients}: ReLU maintains a constant gradient for positive inputs, facilitating effective gradient propagation during training.
+    \item \textbf{Sparsity}: ReLU induces sparsity in activations, which can enhance model interpretability and reduce computational overhead.
+\end{itemize}
+
+\subsubsection{Limitations of ReLU Activation}
+
+\begin{itemize}
+    \item \textbf{Asymmetry}: ReLU inherently discards negative deviations, requiring architectural modifications (such as paired ReLU units) to fully approximate distance metrics like Mahalanobis distance.
+    \item \textbf{Dying ReLU Problem}: Neurons can become inactive if they consistently receive negative inputs, leading to zero activations and hindering learning.
+    \item \textbf{Increased Architectural Complexity}: Approximating distance metrics with ReLU may necessitate additional neurons or layers, increasing the complexity of the network.
+\end{itemize}
+
+\subsection{Comparative Analysis: Abs vs. ReLU Activation}
+
+Both Abs and ReLU activations can be employed to approximate the Mahalanobis distance within neural networks, albeit through different mechanisms. The Abs activation provides a direct and symmetric approximation, capturing both positive and negative deviations with a single activation function. In contrast, ReLU requires paired units to achieve a similar approximation, introducing additional architectural considerations.
+
+\subsubsection{Interpretability}
+
+Abs activations offer enhanced interpretability by directly relating neuron activations to the magnitude of deviations along principal components. Each Abs-activated neuron corresponds to a specific direction in the feature space, with activation magnitudes indicating the distance from the cluster center. ReLU activations, while interpretable when paired, may obscure this direct relationship due to their inherent asymmetry and the necessity of architectural modifications to capture both sides of deviations.
+
+\subsubsection{Training Dynamics}
+
+Abs activations, by preserving both positive and negative deviations, promote stable and consistent gradient flows, facilitating smooth training processes. ReLU activations, while effective in mitigating vanishing gradients, can suffer from issues like the dying ReLU problem, potentially destabilizing training and requiring careful initialization strategies to maintain active neurons.
+
+\subsubsection{Computational Considerations}
+
+Abs activations are computationally straightforward, requiring only a single operation per neuron. ReLU-based approximations, on the other hand, necessitate paired activations, effectively doubling the number of neurons required to capture distance metrics. This increase in computational overhead can impact the efficiency and scalability of the network, particularly in large-scale applications.
+
+\subsection{Implications for Neural Network Design}
+
+The choice between Abs and ReLU activations for distance approximation has significant implications for neural network design, interpretability, and training stability. Abs activations provide a more direct and interpretable means of capturing distance metrics, aligning closely with the mathematical framework established for Mahalanobis distance. However, their symmetric nature may limit their flexibility in certain architectural configurations.
+
+ReLU activations, while requiring architectural adjustments to approximate distance metrics, offer computational efficiency and mitigate issues like vanishing gradients. This makes ReLU a more versatile choice in diverse network architectures, albeit at the cost of increased complexity when used for distance-based interpretations.
+
+\subsection{Summary}
+
+This section has examined how Abs and ReLU activation functions can approximate distance metrics within neural networks, specifically focusing on the Mahalanobis distance. Abs activations provide a direct and symmetric approach, facilitating clear interpretability and stable training dynamics. In contrast, ReLU activations require architectural modifications to achieve similar approximations, introducing additional complexity but offering computational efficiency and gradient stability. Understanding the strengths and limitations of each activation function in the context of distance approximation informs strategic design choices in neural network architecture, balancing interpretability, efficiency, and training stability to achieve optimal performance.
+

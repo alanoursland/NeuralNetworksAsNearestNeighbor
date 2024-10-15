@@ -1,0 +1,67 @@
+% comparisons.tex
+
+\section{Comparison with Existing Theories}
+\label{sec:comparison}
+
+Understanding neural networks through statistical and geometric lenses has been a subject of extensive research. This section situates our proposed framework within the broader landscape of existing theories, highlighting similarities, differences, and the unique contributions of interpreting neural networks through the Mahalanobis distance.
+
+\subsection{Neural Networks and Gaussian Mixture Models}
+
+Previous studies have drawn parallels between neural networks and Gaussian Mixture Models (GMMs), suggesting that neural network layers can be interpreted as components of a GMM \citep{nguyen2011deep, van2008gaussian}. In such interpretations, each neuron or layer can be seen as modeling a Gaussian distribution, capturing different modes of the data distribution. However, these approaches often rely on probabilistic interpretations and latent variable frameworks, which can obscure the direct mathematical connections between network operations and distance metrics.
+
+Our framework extends this line of thought by explicitly linking neural network linear layers and activation functions to the Mahalanobis distance, providing a more direct and mathematically grounded connection. Unlike traditional GMM-based interpretations, which focus on probabilistic assignments and latent representations, our approach emphasizes distance-based measurements and their role in feature representation and clustering within the network.
+
+\subsection{Distance-Based Interpretations in Neural Networks}
+
+Distance metrics have been integral to various machine learning algorithms, particularly in clustering and nearest neighbor classification \citep{hastie2009elements}. Some works have explored incorporating distance-based components into neural networks to enhance interpretability and performance \citep{hullermeier2013learning}. For instance, Prototype Neural Networks \citep{kim2016interpretability} utilize prototype vectors to represent class centers, measuring distances between input data and these prototypes to inform classification decisions.
+
+Our approach aligns with these distance-based interpretations but offers a more comprehensive mathematical framework by connecting neural network activations directly to the Mahalanobis distance. By demonstrating that linear layers with Abs activations can approximate Mahalanobis distances, we provide a clear mechanism through which neural networks can perform distance-based clustering and feature learning, enhancing both interpretability and alignment with statistical principles.
+
+\subsection{Activation Functions and Distance Metrics}
+
+The role of activation functions in neural networks has been extensively studied, with a focus on their impact on gradient flow, sparsity, and non-linearity \citep{glorot2010understanding, lecun2012efficient}. ReLU has emerged as a dominant activation function due to its simplicity and effectiveness in mitigating the vanishing gradient problem. However, alternative activation functions like Absolute Value (Abs) have been proposed to capture different aspects of data relationships \citep{ramachandran2017searching}.
+
+While ReLU facilitates the learning of sparse representations and efficient gradient propagation, our framework highlights how Abs activations can approximate distance metrics, specifically the Mahalanobis distance. This capacity for distance approximation provides a different perspective on feature learning, where neuron activations directly correspond to scaled distances from cluster centers. Compared to ReLU, Abs activations offer enhanced interpretability by maintaining information from both positive and negative deviations, aligning more closely with distance-based operations.
+
+\subsection{Principal Component Analysis (PCA) and Neural Networks}
+
+Principal Component Analysis (PCA) is a widely used dimensionality reduction technique that identifies orthogonal directions of maximum variance in data \citep{jolliffe2002principal}. Several studies have explored the relationship between PCA and neural network weight initialization or layer design \citep{lee2007learning, tashiro2016generalized}. These works suggest that aligning neural network weights with principal components can improve feature extraction and network performance.
+
+Our framework builds upon these insights by explicitly incorporating PCA-derived principal components into the alignment of neural network weights. By demonstrating that linear layers can project data onto principal components and that Abs activations can approximate the Mahalanobis distance, we provide a concrete mathematical basis for integrating PCA principles into neural network architectures. This integration not only enhances interpretability but also leverages the statistical robustness of PCA in feature representation.
+
+\subsection{Prototype and Distance-Based Neural Networks}
+
+Prototype-based neural networks, such as Learning Vector Quantization (LVQ) \citep{teuvo1996learning} and its neural network variants \citep{gross1999generalized}, utilize prototype vectors to represent class centroids. These networks classify inputs based on their proximity to these prototypes, effectively performing a nearest neighbor search within the feature space.
+
+Our approach parallels prototype-based methods by interpreting neurons as prototypes representing cluster centers. However, we extend this concept by providing a mathematical justification for how neural network layers and activation functions can inherently perform distance-based measurements akin to the Mahalanobis distance. This theoretical foundation bridges the gap between traditional prototype-based models and modern deep learning architectures, offering a unified perspective on distance-based feature learning and classification.
+
+\subsection{Advantages Over Existing Theories}
+
+While existing theories provide valuable insights into neural network behavior, our framework offers several distinct advantages:
+
+\begin{itemize}
+    \item \textbf{Direct Mathematical Connection}: We establish a clear and direct mathematical link between neural network operations and the Mahalanobis distance, enhancing the theoretical understanding of how networks process and represent data.
+    
+    \item \textbf{Enhanced Interpretability}: By framing neurons as distance approximators aligned with principal components, our approach offers a more interpretable view of feature learning and decision-making processes within neural networks.
+    
+    \item \textbf{Training Stability}: The distance-based framework promotes stable gradient flows and controlled weight updates, potentially mitigating common training issues such as vanishing or exploding gradients.
+    
+    \item \textbf{Guidance for Activation Function Selection}: Our analysis provides a principled basis for selecting activation functions based on their ability to approximate distance metrics, informing architectural design choices that balance interpretability and performance.
+\end{itemize}
+
+\subsection{Limitations and Considerations}
+
+Despite its strengths, our framework also presents certain limitations:
+
+\begin{itemize}
+    \item \textbf{Assumption of Gaussian Distributions}: The connection between neural networks and Mahalanobis distance relies on the assumption that data distributions can be well-approximated by multivariate Gaussian distributions. In scenarios where data exhibits complex, non-Gaussian distributions, the approximation may be less accurate.
+    
+    \item \textbf{Scalability to Deep Architectures}: While the framework is applicable to shallow networks, extending it to deeper and more complex architectures requires additional considerations, such as the interplay between multiple layers and hierarchical feature representations.
+    
+    \item \textbf{Activation Function Constraints}: The effectiveness of distance approximation is contingent on the choice and configuration of activation functions. Abs activations offer a more direct approximation but may introduce computational overhead, whereas ReLU activations require architectural modifications to achieve similar results.
+\end{itemize}
+
+\subsection{Summary}
+
+This section has positioned our Mahalanobis distance-based framework within the context of existing neural network theories and statistical models. By contrasting our approach with Gaussian Mixture Models, distance-based interpretations, PCA integrations, and prototype-based networks, we have highlighted the unique contributions and advantages of interpreting neural networks through distance metrics. While acknowledging the framework's limitations, we emphasize its potential to enhance interpretability, inform architectural design, and improve training dynamics in neural networks. The subsequent sections will delve into the practical implications of this framework, explore potential extensions, and outline future research directions to further advance the theoretical and practical understanding of neural network operations.
+

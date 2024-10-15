@@ -1,0 +1,182 @@
+```latex
+% math_framework.tex
+
+\section{Mathematical Framework}
+\label{sec:math_framework}
+
+In this section, we develop the mathematical foundation that connects neural networks to the Mahalanobis distance, thereby providing a framework for interpreting neural network operations through the lens of statistical distance measures. We begin by revisiting key concepts related to Gaussian distributions and the Mahalanobis distance, followed by a detailed exploration of how neural network components, particularly linear layers and activation functions, can approximate these distance metrics. This framework not only enhances our understanding of neural network behavior but also lays the groundwork for leveraging statistical principles to improve network interpretability and training dynamics.
+
+\subsection{Multivariate Gaussian Distribution}
+
+A multivariate Gaussian (normal) distribution is a fundamental concept in statistics, describing a $d$-dimensional random vector $\mathbf{x} \in \mathbb{R}^d$ with a mean vector $\boldsymbol{\mu} \in \mathbb{R}^d$ and a covariance matrix $\boldsymbol{\Sigma} \in \mathbb{R}^{d \times d}$ \citep{bishop2006pattern}. The probability density function (pdf) of a multivariate Gaussian distribution is given by:
+
+\begin{equation}
+\label{eq:multivariate_gaussian}
+f(\mathbf{x}) = \frac{1}{(2\pi)^{d/2} |\boldsymbol{\Sigma}|^{1/2}} \exp\left( -\frac{1}{2} (\mathbf{x} - \boldsymbol{\mu})^\top \boldsymbol{\Sigma}^{-1} (\mathbf{x} - \boldsymbol{\mu}) \right),
+\end{equation}
+
+where $|\boldsymbol{\Sigma}|$ denotes the determinant of the covariance matrix, and $\boldsymbol{\Sigma}^{-1}$ is its inverse. The covariance matrix $\boldsymbol{\Sigma}$ captures the variance of each dimension and the covariance between different dimensions, thereby encoding the shape and orientation of the distribution in the feature space.
+
+\subsection{Mahalanobis Distance}
+
+The Mahalanobis distance is a measure of the distance between a point $\mathbf{x}$ and the mean $\boldsymbol{\mu}$ of a distribution, taking into account the covariance of the data \citep{mahalanobis1936generalized, demaesschalck2000mahalanobis}. It is defined as:
+
+\begin{equation}
+\label{eq:mahalanobis_distance}
+D_M(\mathbf{x}) = \sqrt{ (\mathbf{x} - \boldsymbol{\mu})^\top \boldsymbol{\Sigma}^{-1} (\mathbf{x} - \boldsymbol{\mu}) }.
+\end{equation}
+
+This distance metric adjusts for the variance along each principal component (direction) in the data, allowing for scale-invariant comparisons. Unlike the Euclidean distance, which treats all dimensions equally, the Mahalanobis distance accounts for the covariance structure, making it particularly useful in scenarios where features are correlated or have different variances.
+
+\subsection{Principal Component Analysis (PCA)}
+
+Principal Component Analysis (PCA) is a dimensionality reduction technique that transforms data into a new coordinate system, emphasizing directions (principal components) that capture the most variance \citep{jolliffe2002principal}. The covariance matrix $\boldsymbol{\Sigma}$ of the data is decomposed using eigenvalue decomposition:
+
+\begin{equation}
+\boldsymbol{\Sigma} = \mathbf{V} \boldsymbol{\Lambda} \mathbf{V}^\top,
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $\mathbf{V} = [\mathbf{v}_1, \mathbf{v}_2, \dots, \mathbf{v}_d]$ is a matrix whose columns are the orthogonal unit eigenvectors of $\boldsymbol{\Sigma}$.
+    \item $\boldsymbol{\Lambda} = \text{diag}(\lambda_1, \lambda_2, \dots, \lambda_d)$ is a diagonal matrix of the corresponding eigenvalues $\lambda_i$, representing the variance along each principal component.
+\end{itemize}
+
+The principal components $\mathbf{v}_i$ define the directions of maximum variance in the data, and the eigenvalues $\lambda_i$ quantify the amount of variance captured by each principal component. PCA effectively rotates and scales the data to align with these principal directions, facilitating more meaningful distance computations.
+
+\subsection{Connecting Neural Networks to Mahalanobis Distance}
+
+Neural networks, particularly their linear layers, can be interpreted through the lens of Mahalanobis distance by aligning their weights with the principal components of the data distribution. Consider a linear layer in a neural network, which performs an affine transformation on the input vector $\mathbf{x}$:
+
+\begin{equation}
+\mathbf{y} = \mathbf{W} \mathbf{x} + \mathbf{b},
+\end{equation}
+
+where $\mathbf{W} \in \mathbb{R}^{m \times d}$ is the weight matrix, and $\mathbf{b} \in \mathbb{R}^m$ is the bias vector. Each row $\mathbf{w}_i$ of $\mathbf{W}$ and corresponding bias $b_i$ define a linear transformation for the $i$-th output neuron.
+
+To connect this to Mahalanobis distance, we align the weight vectors $\mathbf{w}_i$ with the principal components $\mathbf{v}_i$ obtained from PCA. Specifically, we set:
+
+\begin{align}
+\label{eq:w_and_b_definitions}
+\mathbf{W} &= \mathbf{V}^\top \boldsymbol{\Lambda}^{-1/2}, \\
+\mathbf{b} &= -\mathbf{W} \boldsymbol{\mu},
+\end{align}
+
+where $\boldsymbol{\Lambda}^{-1/2} = \text{diag}(\lambda_1^{-1/2}, \lambda_2^{-1/2}, \dots, \lambda_d^{-1/2})$. Substituting these into the linear transformation equation, we obtain:
+
+\begin{equation}
+\mathbf{y} = \mathbf{V}^\top \boldsymbol{\Lambda}^{-1/2} \mathbf{x} - \mathbf{V}^\top \boldsymbol{\Lambda}^{-1/2} \boldsymbol{\mu}.
+\end{equation}
+
+Simplifying, we get:
+
+\begin{equation}
+\mathbf{y} = \boldsymbol{\Lambda}^{-1/2} \mathbf{V} (\mathbf{x} - \boldsymbol{\mu}),
+\end{equation}
+
+which can be interpreted as projecting the centered data $(\mathbf{x} - \boldsymbol{\mu})$ onto the principal components and scaling by the inverse square root of the eigenvalues. This transformation effectively whitens the data, making the Mahalanobis distance equivalent to the Euclidean distance in the transformed space.
+
+\subsection{Activation Functions as Distance Approximators}
+
+Activation functions introduce non-linearity into neural networks, enabling the approximation of complex functions. In the context of distance metrics, activation functions can modulate the output of linear layers to approximate various distance measures. We focus on two activation functions: Absolute Value (Abs) and Rectified Linear Unit (ReLU).
+
+\subsubsection{Absolute Value (Abs) Activation}
+
+The Absolute Value activation function is defined as:
+
+\begin{equation}
+\text{Abs}(y) = |y|.
+\end{equation}
+
+When applied to the output of a linear layer, Abs transforms each component of $\mathbf{y}$ as follows:
+
+\begin{equation}
+\mathbf{a} = \text{Abs}(\mathbf{y}) = |\mathbf{y}|.
+\end{equation}
+
+Substituting the expression for $\mathbf{y}$, we obtain:
+
+\begin{equation}
+a_i = \left| \mathbf{w}_i^\top \mathbf{x} + b_i \right| = \left| \frac{\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu})}{\sqrt{\lambda_i}} \right|.
+\end{equation}
+
+This formulation closely resembles the components of the Mahalanobis distance, where each $a_i$ represents the scaled absolute projection of the data point onto the $i$-th principal component. Summing these absolute values across all principal components approximates the Mahalanobis distance:
+
+\begin{equation}
+D_M(\mathbf{x}) \approx \sum_{i=1}^d a_i = \sum_{i=1}^d \left| \frac{\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu})}{\sqrt{\lambda_i}} \right|.
+\end{equation}
+
+This approximation leverages the $\ell_1$ norm to estimate the Mahalanobis distance, providing a computationally efficient alternative that maintains interpretability.
+
+\subsubsection{Rectified Linear Unit (ReLU) Activation}
+
+The Rectified Linear Unit (ReLU) activation function is defined as:
+
+\begin{equation}
+\text{ReLU}(y) = \max(0, y).
+\end{equation}
+
+Applying ReLU to the output of a linear layer yields:
+
+\begin{equation}
+\mathbf{a} = \text{ReLU}(\mathbf{y}) = \max(0, \mathbf{y}).
+\end{equation}
+
+Substituting the expression for $\mathbf{y}$, we have:
+
+\begin{equation}
+a_i = \max\left(0, \frac{\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu})}{\sqrt{\lambda_i}} \right).
+\end{equation}
+
+Unlike Abs, ReLU only preserves positive deviations from the decision boundary, effectively discarding negative information. To approximate the Mahalanobis distance using ReLU, additional architectural considerations are necessary, such as employing paired ReLU units to capture both positive and negative deviations:
+
+\begin{align}
+a_i^+ &= \text{ReLU}\left( \frac{\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu})}{\sqrt{\lambda_i}} \right), \\
+a_i^- &= \text{ReLU}\left( -\frac{\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu})}{\sqrt{\lambda_i}} \right).
+\end{align}
+
+By summing these paired activations, we can approximate the absolute value:
+
+\begin{equation}
+a_i = a_i^+ + a_i^- = \left| \frac{\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu})}{\sqrt{\lambda_i}} \right|.
+\end{equation}
+
+Thus, while ReLU does not directly approximate the Mahalanobis distance, it can achieve a similar effect through architectural modifications, enabling the network to capture both positive and negative deviations.
+
+\subsection{Neural Networks as Distance-Based Models}
+
+By integrating the aforementioned components, neural networks can be interpreted as models that compute distance-based representations of input data. Specifically, linear layers aligned with principal components, followed by appropriate activation functions, approximate the Mahalanobis distance, enabling the network to perform clustering and nearest neighbor-like operations within the feature space.
+
+\subsubsection{Linear Layers and Principal Component Alignment}
+
+Aligning the weights of linear layers with the principal components ensures that each neuron captures variance along a specific direction in the data. This alignment is crucial for approximating the Mahalanobis distance, as it allows the network to scale and project data points in a manner that accounts for the covariance structure.
+
+\subsubsection{Activation Functions and Distance Approximation}
+
+The choice of activation function determines how the network interprets and processes the scaled projections:
+
+\begin{itemize}
+    \item \textbf{Abs Activation}: Directly approximates the Mahalanobis distance through the $\ell_1$ norm, preserving both positive and negative deviations by taking their absolute values.
+    
+    \item \textbf{ReLU Activation}: Requires architectural adjustments to capture both sides of deviations, effectively replicating the Abs activation's behavior through paired units.
+\end{itemize}
+
+\subsection{Implications for Neural Network Interpretability and Training}
+
+Interpreting neural networks as distance-based models has significant implications for their interpretability and training dynamics:
+
+\subsubsection{Enhanced Interpretability}
+
+Each neuron can be viewed as a prototype representing a cluster center in the feature space. The network's decision-making process becomes more transparent, as the activation magnitudes correspond to the proximity of input data points to these prototypes.
+
+\subsubsection{Stable Training Dynamics}
+
+Distance-based activations like Abs encourage consistent and incremental weight updates, promoting stable training. In contrast, large activation magnitudes in separation-based models can lead to significant gradient updates, potentially destabilizing training processes.
+
+\subsubsection{Architectural Design Choices}
+
+Understanding the connection between neural network components and distance metrics informs architectural design choices, such as the selection of activation functions and initialization strategies. For instance, initializing biases to ensure alignment with data clusters can enhance the network's ability to capture meaningful feature representations.
+
+\subsection{Summary}
+
+This mathematical framework establishes a direct connection between neural network linear layers and the Mahalanobis distance, facilitated by the alignment of weights with principal components and the choice of activation functions. By interpreting neurons as distance approximators, we gain deeper insights into the feature learning and clustering mechanisms inherent in neural networks. This perspective not only enhances the interpretability of neural network models but also informs strategies for designing more stable and efficient architectures. The ensuing sections will delve into specific distance approximators, explore the practical implications of this framework, and discuss potential avenues for future research.
