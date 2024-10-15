@@ -1,55 +1,42 @@
 % background.tex
- 
 \section{Background and Related Work}
-% \label{sec:background}
 
-\subsection{Evolution of Activation Functions in Neural Networks}
+\subsection{Activation Functions}
 
-Activation functions are a fundamental component of neural networks, introducing non-linearity that enables the modeling of complex relationships within data. Early neural networks predominantly utilized sigmoid and hyperbolic tangent (Tanh) activation functions \citep{rosenblatt1958perceptron, taillade1989hyperbolic}. These functions map inputs to a bounded range, facilitating gradient-based optimization. However, they suffer from the \textit{vanishing gradient} problem, where gradients diminish exponentially with depth, hindering the training of deep networks \citep{glorot2010understanding}.
+Activation functions introduce non-linearity in neural networks, enabling them to model complex data relationships. The field has evolved from early sigmoid and hyperbolic tangent functions \citep{rosenblatt1958perceptron} to the widely adopted Rectified Linear Unit (ReLU) \citep{nair2010rectified}, which mitigates the vanishing gradient problem in deep networks \citep{glorot2010understanding, krizhevsky2012imagenet}.
 
-The introduction of the Rectified Linear Unit (ReLU) \citep{nair2010rectified} marked a significant advancement, addressing the vanishing gradient issue by allowing gradients to propagate more effectively. ReLU functions output zero for negative inputs and linearly increase for positive inputs, promoting sparse activations and accelerating convergence during training \citep{he2015delving}. Despite its widespread adoption, ReLU is not without limitations, such as the \textit{dying ReLU} problem, where neurons can become inactive and only output zero \citep{maas2013rectifier}.
+ReLU variants intended to address its shortcomings include Leaky ReLU {maas2013rectifier}; Parametric ReLU (PReLU) \citep{he2015delving}; and Exponential Linear Unit (ELU) \citep{clevert2015fast}.
 
-In response to these challenges, various alternative activation functions have been proposed, including Leaky ReLU \citep{maas2013rectifier}, Parametric ReLU \citep{he2015delving}, and Exponential Linear Units (ELUs) \citep{clevert2015fast}. These alternatives aim to mitigate the dying ReLU problem and improve gradient flow while retaining the benefits of ReLU. However, the exploration of activation functions beyond ReLU remains an active area of research, with ongoing investigations into their impact on network performance and interpretability \citep{ramachandran2017searching}.
+Tanh and Sigmoid activations are still used in many architectures such as recurrent neural networks (RNNs) and Long Short-Term Memory (LSTM) networks \citep{hochreiter1997long}.
 
-\subsection{Distance Metrics in Machine Learning}
+The variety of activation functions used in modern networks reflects the diverse needs of different architectures. The exploration of activation functions remains an active area of research, with ongoing investigations into their impact on neural network performance, generalization, and interpretability \citep{ramachandran2017searching}. Despite extensive research, the interpretation of activation functions in terms of statistical measures remains an open area of investigation.
 
-Distance metrics play a crucial role in various machine learning algorithms, particularly in clustering, classification, and anomaly detection. Commonly used metrics include the Euclidean distance, Manhattan distance, and Mahalanobis distance \citep{hastie2009elements}. Each metric captures different aspects of data relationships, influencing the behavior and performance of algorithms that utilize them.
+\subsection{Overview of Distance Metrics in Clustering}
 
-The \textit{Mahalanobis distance} is a multivariate measure that accounts for the covariance structure of the data, providing a scale-invariant distance metric \citep{mahalanobis1936generalized}. Unlike Euclidean distance, which treats all dimensions equally, Mahalanobis distance adjusts for correlations between variables, making it particularly suitable for identifying outliers and performing clustering in correlated feature spaces \citep{demaesschalck2000mahalanobis}.
+Distance metrics are fundamental in clustering algorithms, determining how similarity between data points is measured. Various clustering methods employ different distance measures:
 
-In the context of neural networks, distance metrics are implicitly utilized in various components, such as loss functions and regularization terms. For instance, the Cross Entropy Loss \citep{bishop1995neural} interprets larger activation values as stronger signals for class membership, aligning with probabilistic interpretations of network outputs. Conversely, Hinge Loss \citep{cortes1995support} discourages small activation values, promoting maximal separation between classes and implicitly encouraging the network to learn decision boundaries that reflect underlying data distributions.
+\begin{itemize}
+    \item K-Means typically uses Euclidean distance (L2 norm), assuming spherical clusters and equal feature importance \citep{macqueen1967some}.
+    
+    \item Gaussian Mixture Models (GMMs) employ Mahalanobis distance, accounting for data covariance and modeling elliptical clusters \citep{reynolds2009gaussian}.
+    
+    \item Hierarchical and Agglomerative Clustering can use various metrics (Euclidean, Manhattan, correlation-based), affecting dendrogram shape \citep{murtagh1983survey}.
+    
+    \item DBSCAN, while often using Euclidean distance, can employ any metric for density-based clustering \citep{ester1996density}.
+    
+    \item Spectral Clustering incorporates similarity measures like Gaussian kernel functions \citep{von2007tutorial}.
+\end{itemize}
 
-\subsection{Neural Network Interpretability}
+The Mahalanobis distance stands out for its ability to account for feature correlations and scale differences, making it particularly useful in multivariate analysis \citep{mahalanobis1936generalized}. It provides a scale-invariant measure that adjusts for the covariance structure of the data, offering advantages in high-dimensional spaces.
 
-Understanding the internal workings of neural networks remains a significant challenge, often referred to as the "black-box" nature of deep learning models \citep{lipton2016mythos}. Interpretability is crucial for applications requiring transparency, such as healthcare, finance, and autonomous systems \citep{rudin2019stop}. Various approaches have been proposed to enhance interpretability, including feature visualization \citep{erhan2009visualizing}, saliency maps \citep{simonyan2013deep}, and prototype-based methods \citep{kim2016interpretability}.
+Recent research has explored adaptive and learned distance metrics, optimizing the distance measure based on the data \citep{weinberger2009distance}. This approach allows for more flexible and data-driven similarity measures, potentially improving clustering performance across diverse datasets.
 
-Recent efforts have focused on linking neural network operations to statistical and probabilistic models to provide a more principled understanding of feature learning and decision-making processes \citep{bengio2013representation, goodfellow2016deep}. For example, Bayesian neural networks incorporate uncertainty estimates, aligning network outputs with probabilistic interpretations \citep{neal1996bayesian, blundell2015weight}. Additionally, connections between neural networks and kernel methods have been explored, highlighting how deep architectures can implicitly perform kernel-based feature transformations \citep{rahimi2008random}.
+Understanding these distance metrics and their properties is crucial for selecting appropriate clustering algorithms and interpreting their results. As we explore the connection between neural networks and distance-based interpretations, these insights from clustering algorithms provide valuable context and inspiration.
 
-Despite these advancements, there remains a gap in establishing direct mathematical connections between neural network components and well-defined statistical distance measures like the Mahalanobis distance. Such connections could provide deeper insights into how neural networks organize and interpret feature spaces, potentially leading to more interpretable and robust models. This paper aims to bridge this gap by demonstrating how linear layers with absolute value activations can approximate Mahalanobis distances, thereby offering a new perspective on neural network interpretability.
+\subsection{Neural Network Interpretability and Statistical Models}
 
-\subsection{Mahalanobis Distance and Principal Component Analysis}
+The interpretability of neural networks remains a critical challenge, often referred to as the "black-box" nature of these models \citep{lipton2016mythos}. In applications requiring transparency, such as healthcare and finance, understanding the decision-making processes of neural networks is paramount \citep{rudin2019stop}. Various approaches have been developed to enhance interpretability, including feature visualization, saliency maps, and prototype-based methods \citep{erhan2009visualizing, simonyan2013deep, kim2016interpretability}.
 
-Principal Component Analysis (PCA) is a dimensionality reduction technique that transforms data into a new coordinate system, emphasizing directions (principal components) that capture the most variance \citep{jolliffe2002principal}. The Mahalanobis distance leverages the covariance matrix derived from PCA to measure distances in a way that accounts for data distribution anisotropy \citep{hastie2009elements}.
+Recent research has aimed to bridge neural networks with statistical and probabilistic models to provide a more principled understanding of their internal mechanisms \citep{bengio2013representation, goodfellow2016deep}. Bayesian neural networks, for instance, incorporate uncertainty estimates that align network outputs with probabilistic interpretations \citep{neal1996bayesian, blundell2015weight}. Additionally, connections between neural networks and kernel methods have been explored, highlighting how deep architectures can implicitly perform kernel-based feature transformations \citep{rahimi2008random}.
 
-By performing eigenvalue decomposition on the covariance matrix $\boldsymbol{\Sigma}$, PCA identifies orthogonal principal components $\mathbf{V} = [\mathbf{v}_1, \mathbf{v}_2, \dots, \mathbf{v}_d]$ and their corresponding eigenvalues $\boldsymbol{\Lambda} = \text{diag}(\lambda_1, \lambda_2, \dots, \lambda_d)$ \citep{jolliffe2002principal}. The Mahalanobis distance is then expressed as:
-
-\begin{equation}
-D_M(\mathbf{x}) = \sqrt{ \sum_{i=1}^d \frac{ (\mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu}))^2 }{ \lambda_i } },
-\end{equation}
-
-where $\boldsymbol{\mu}$ is the mean vector of the distribution. This formulation highlights how Mahalanobis distance scales the projection of data points onto each principal component by the inverse of their variance, effectively normalizing the data along directions of different variances.
-
-Integrating this concept with neural networks, it becomes evident that aligning neural network weights with principal components can enable the network to capture meaningful data structures. Specifically, linear layers followed by appropriate activation functions can perform operations analogous to PCA-based distance measurements, facilitating the approximation of Mahalanobis distances within the network architecture.
-
-\subsection{Connections Between Neural Networks and Statistical Models}
-
-Several studies have explored the relationship between neural networks and statistical models, aiming to demystify the internal mechanisms of deep learning architectures \citep{bengio2013representation, goodfellow2016deep}. For instance, the equivalence between neural networks and mixture models has been investigated, where neural network layers can be interpreted as components of a Gaussian Mixture Model (GMM) \citep{nguyen2011deep}.
-
-Moreover, work has been done to understand neural networks through the lens of probabilistic graphical models, revealing how hidden layers can represent latent variables that capture complex dependencies in the data \citep{kingma2014semi, hinton2007semi}. These connections provide a statistical foundation for neural network operations, offering avenues for enhancing interpretability and leveraging probabilistic reasoning within deep learning frameworks.
-
-However, direct mathematical connections between neural network activation functions and specific distance metrics like Mahalanobis distance have not been extensively explored. By establishing such a connection, this paper aims to contribute to the theoretical understanding of neural networks, providing a foundation for interpreting network behavior in terms of well-defined statistical measures.
-
-\subsection{Summary}
-
-The evolution of activation functions has been pivotal in advancing neural network performance, with ReLU emerging as a dominant choice due to its ability to mitigate the vanishing gradient problem. However, the exploration of alternative activation functions continues to be an important research direction, particularly in the context of enhancing interpretability and stability. Distance metrics, especially the Mahalanobis distance, offer a principled way to measure proximity in feature spaces, accounting for data covariance and distribution. Bridging neural networks with such statistical measures can provide deeper insights into feature learning and decision-making processes, addressing the interpretability challenges inherent in deep learning models. This paper seeks to establish this mathematical connection, laying the groundwork for more interpretable and robust neural network architectures.
-
+However, there is a notable gap in establishing direct mathematical connections between neural network components, specifically activation functions, and statistical distance measures like the Mahalanobis distance. Addressing this gap can provide deeper insights into feature learning and decision-making processes, thereby enhancing the interpretability and robustness of neural network models.
