@@ -112,30 +112,9 @@ We can select a rotation matrix \(\mathbf{R} \in SO(n)\) such that:
                       &= D_M\left( \boldsymbol{\Lambda}^{-1/2} (\mathbf{V}^\top \mathbf{R}) (\mathbf{x} - \boldsymbol{\mu}) \right).
     \end{align}
     
-The Mahalanobis distance for whitened data remains invariant under the application of rotation matrices. If we transform the rotated basis back to the orignal space, we end up with a whitening basis whose component vectors may not be orthogonal.
+The Mahalanobis distance for whitened data remains invariant under the application of rotation matrices. If we transform the rotated basis back to the original space, we end up with a whitening basis whose component vectors may not be orthogonal.
 
 This implies that, although linear nodes can represent principal components, they are unlikely to actually learn the principal components when estimating Mahalanobis distances. Instead, they are expected to learn an basis that effectively whitens the data for use in the Mahalanobis distance estimation. However, the decision boundary of the learned hyperplane should still pass through the data mean.
-
-We can calculate one of these rotated principal components as the weighted sum of principle components with a unity constraint on the weights.
-
-\begin{equation}
-    \label{eq:pc_mixture}
-    \boldsymbol{W_c} = \sum a_i \mathbf{W_i}
-\end{equation}
-
-where
-
-\begin{equation}
-    \label{eq:pc_mixture_constraint}
-    \left| boldsymbol{a} \right|_2 = 1
-\end{equation}
-
-$\boldsymbol{W_c}$ is any vector from $\boldsymbol{\mu}$ to a point on the unit variance ellipsoid. This results in the Mahalanobis distance estimate:
-
-\begin{equation}
-    \label{eq:mahalanobis_mixed}
-    y = \left| \sum (a_i \mathbf{W_i}) \mathbf{x} - \mathbf{b_c} \right|,
-\end{equation}
 
 \subsection{Approximating Mahalanobis Distance with Neural Networks}
 
