@@ -86,6 +86,8 @@ Extending this to all principal components, the Mahalanobis distance can be repr
 
 \subsection{Non-Uniqueness of Whitening}
 
+Calculating the Mahalanobis distance along each principal component results in a whitened data set. 
+
 Whitening data is defined as follows:
 
 \[
@@ -100,15 +102,19 @@ The Mahalanobis distance can then be expressed as:
 D_M(\mathbf{x}_w) = \|\mathbf{x}_w\|_2.
 \]
 
-We can select a rotation matrix \(\mathbf{A_r} \in SO(n)\) such that:
+However the vectors to generate whitened data are not unique.
+
+We can select a rotation matrix \(\mathbf{R} \in SO(n)\) such that:
 
 \begin{align}
-    D_M(\mathbf{x}_w) &= D_M(\mathbf{A_r} \mathbf{x}_w) \\
-                      &= D_M\left( (\mathbf{A_r} \boldsymbol{\Lambda}^{-1/2} \mathbf{V}^\top) (\mathbf{x} - \boldsymbol{\mu}) \right) \\
-                      &= D_M\left( \boldsymbol{\Lambda}^{-1/2} (\mathbf{V}^\top \mathbf{A_r}) (\mathbf{x} - \boldsymbol{\mu}) \right).
+    D_M(\mathbf{x}_w) &= D_M(\mathbf{R} \mathbf{x}_w) \\
+                      &= D_M\left( (\mathbf{R} \boldsymbol{\Lambda}^{-1/2} \mathbf{V}^\top) (\mathbf{x} - \boldsymbol{\mu}) \right) \\
+                      &= D_M\left( \boldsymbol{\Lambda}^{-1/2} (\mathbf{V}^\top \mathbf{R}) (\mathbf{x} - \boldsymbol{\mu}) \right).
     \end{align}
     
-This shows that the Mahalanobis distance remains invariant under the application of rotation matrices, highlighting the non-uniqueness of the whitening transformation. These rotated components can also be utilized to accurately calculate the Mahalanobis distance. This implies that, although linear nodes can represent principal components, they are unlikely to actually learn the principal components when estimating Mahalanobis distances. Instead, they are expected to learn an orthogonal basis that effectively captures the necessary variance for distance estimation. However, the decision boundary should still pass through the data mean.
+The Mahalanobis distance for whitened data remains invariant under the application of rotation matrices. If we transform the rotated basis back to the orignal space, we end up with a whitening basis whose component vectors may not be orthogonal.
+
+This implies that, although linear nodes can represent principal components, they are unlikely to actually learn the principal components when estimating Mahalanobis distances. Instead, they are expected to learn an basis that effectively whitens the data for use in the Mahalanobis distance estimation. However, the decision boundary of the learned hyperplane should still pass through the data mean.
 
 We can calculate one of these rotated principal components as the weighted sum of principle components with a unity constraint on the weights.
 
@@ -140,6 +146,6 @@ Following the Abs function with another linear node allows for a summation of th
     y = \sum \left| \mathbf{W_c} \mathbf{x} - \mathbf{b_c} \right|,
 \end{equation}
 
-L1 norms have been utilized as an effective alternative to L2 norms in various high-dimensional applications \citep{garling1983banach, bernhardsson2018annoy}. In finite-dimensional vector spaces, all norms are equivalent up to constant factors, allowing L1 norms to bound and be bounded by L2 norms \citep{garling1983banach}. Moreover, L1 norms offer robustness to outliers, making them well-suited for training contexts with unexpected or noisy data \citep{candes2005decoding}. 
+L1 norms have been utilized as an effective alternative to L2 norms in various high-dimensional applications \citep{bernhardsson2018annoy}. In finite-dimensional vector spaces, all norms are equivalent up to constant factors, allowing L1 norms to bound and be bounded by L2 norms \citep{kreyszig1978introductory}. Moreover, L1 norms offer robustness to outliers, making them well-suited for training contexts with unexpected or noisy data \citep{candes2005decoding}. 
 
 In the neural network architecture, each Abs-activated linear node computes the absolute deviation along a specific principal component direction. The subsequent summation node aggregates these deviations, thereby approximating the overall Mahalanobis distance through an L1 norm-based aggregation of L2-like components. This approach leverages the computational efficiency and robustness of L1 norms while maintaining the interpretability of Mahalanobis distance in high-dimensional spaces.

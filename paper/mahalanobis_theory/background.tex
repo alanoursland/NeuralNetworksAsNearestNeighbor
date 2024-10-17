@@ -5,7 +5,7 @@
 
 Activation functions introduce non-linearity in neural networks, enabling them to model complex data relationships. The field has evolved from early sigmoid and hyperbolic tangent functions \citep{rosenblatt1958perceptron} to the widely adopted Rectified Linear Unit (ReLU) \citep{nair2010rectified}, which mitigates the vanishing gradient problem in deep networks \citep{glorot2010understanding, krizhevsky2012imagenet}.
 
-ReLU variants intended to address its shortcomings include Leaky ReLU {maas2013rectifier}; Parametric ReLU (PReLU) \citep{he2015delving}; and Exponential Linear Unit (ELU) \citep{clevert2015fast}.
+ReLU variants intended to address its shortcomings include Leaky ReLU {maas2013rectifier}; Parametric ReLU (PReLU) \citep{he2015delving}; and Exponential Linear Unit (ELU) \citep{clevert2015fast}. Additionally, newer activation functions like Swish \citep{ramachandran2017searching} and GELU \citep{hendrycks2016gaussian} have been proposed to further enhance network performance and training dynamics.
 
 Tanh and Sigmoid activations are still used in many architectures such as recurrent neural networks (RNNs) and Long Short-Term Memory (LSTM) networks \citep{hochreiter1997long}.
 
@@ -27,15 +27,13 @@ Distance metrics are fundamental in clustering algorithms, determining how simil
     \item Spectral Clustering incorporates similarity measures like Gaussian kernel functions \citep{von2007tutorial}.
 \end{itemize}
 
-The Mahalanobis distance stands out for its ability to account for feature correlations and scale differences, making it particularly useful in multivariate analysis \citep{mahalanobis1936generalized}. It provides a scale-invariant measure that adjusts for the covariance structure of the data, offering advantages in high-dimensional spaces.
-
-Recent research has explored adaptive and learned distance metrics, optimizing the distance measure based on the data \citep{weinberger2009distance}. This approach allows for more flexible and data-driven similarity measures, potentially improving clustering performance across diverse datasets.
+The Mahalanobis distance stands out for its ability to account for feature correlations and scale differences, making it particularly useful in multivariate analysis \citep{mahalanobis1936generalized, demaesschalck2000mahalanobis}. It provides a scale-invariant measure that adjusts for the covariance structure of the data, offering advantages in high-dimensional spaces.
 
 Understanding these distance metrics and their properties is crucial for selecting appropriate clustering algorithms and interpreting their results. As we explore the connection between neural networks and distance-based interpretations, these insights from clustering algorithms provide valuable context and inspiration.
 
 \subsection{Neural Network Interpretability and Statistical Models}
 
-The interpretability of neural networks remains a critical challenge, often referred to as the "black-box" nature of these models \citep{lipton2016mythos}. In applications requiring transparency, such as healthcare and finance, understanding the decision-making processes of neural networks is paramount \citep{rudin2019stop}. Various approaches have been developed to enhance interpretability, including feature visualization, saliency maps, and prototype-based methods \citep{erhan2009visualizing, simonyan2013deep, kim2016interpretability}.
+The interpretability of neural networks remains a critical challenge, often referred to as the "black-box" nature of these models \citep{lipton2016mythos}. In applications requiring transparency, such as healthcare and finance, understanding the decision-making processes of neural networks is paramount \citep{rudin2019stop}. Various approaches have been developed to enhance interpretability, including feature visualization, saliency maps, and prototype-based methods \citep{erhan2009visualizing, simonyan2013deep, kim2016interpreting}.
 
 Recent research has aimed to bridge neural networks with statistical and probabilistic models to provide a more principled understanding of their internal mechanisms \citep{bengio2013representation, goodfellow2016deep}. Bayesian neural networks, for instance, incorporate uncertainty estimates that align network outputs with probabilistic interpretations \citep{neal1996bayesian, blundell2015weight}. Additionally, connections between neural networks and kernel methods have been explored, highlighting how deep architectures can implicitly perform kernel-based feature transformations \citep{rahimi2008random}.
 

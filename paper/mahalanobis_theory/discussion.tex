@@ -1,47 +1,95 @@
 % discussion.tex
 
-\section{Discussion}
+\section{Implications and Discussion}
 \label{sec:discussion}
 
-The theoretical framework presented in this paper establishes a direct mathematical connection between neural network operations and the Mahalanobis distance, offering a novel perspective on neural network interpretability and feature learning. This discussion delves into the significance of these findings, their alignment with existing theories, practical implications, and the potential challenges and limitations inherent in this approach.
+We discuss implications, potential impact and future work of this reframing of linear layers in neural networks. While this paper provides a robust theoretical foundation for interpreting neural networks through Mahalanobis distance and Abs activation functions, it does not include empirical results. Future work will involve validating these theoretical insights with empirical data to further assess their applicability and performance in real-world scenarios.
 
-\subsection{Significance of the Mahalanobis Distance Framework}
+\subsection{Expected Value Interpretation}
 
-By interpreting neurons as distance approximators aligned with principal components, we provide a structured method for understanding how neural networks process and represent data. This alignment ensures that each neuron's activation corresponds to a scaled distance measurement from a cluster center, thereby embedding statistical rigor into the neural network's feature extraction process. The ability to approximate the Mahalanobis distance within neural network layers enhances the interpretability of the model by linking activations directly to meaningful statistical measures.
+The concept of expected value or mean is fundamental in statistics and machine learning, providing a central tendency that characterizes a distribution. In the context of neural networks, identifying an expected value for each neuron can offer insights into the features it recognizes and how it processes information.
 
-\subsection{Alignment with Existing Theories}
+By interpreting linear nodes as principal components of Gaussian approximations of data clusters, we can potentially identify a mean value for the data points recognized by each neuron. This interpretation provides a probabilistic perspective on neural network operations and enhances our understanding of their internal representations.
 
-Our framework complements and extends existing theories that draw parallels between neural networks and statistical models. Unlike Gaussian Mixture Models (GMMs) or Prototype Neural Networks, which incorporate probabilistic interpretations, our approach offers a deterministic mathematical connection that focuses on distance metrics. This distinction allows for a more precise alignment of neural network operations with well-defined statistical measures, enhancing both interpretability and theoretical robustness.
+As a linear separator, a neuron with inputs in $\mathbb{R}^n$ defines a hyperplane with $(n-1)$ dimensions and a normal vector in 1 dimension. The normal vector represents the Gaussian direction, with the mean being somewhere on the hyperplane. There are many techniques that could be successful at this including projecting data onto the normal vector and clustering, weighted averages using functions of the inverse distances, boundary constraints, optimization searches and manifold analysis.
 
-Furthermore, the integration of Principal Component Analysis (PCA) into neural network weight alignment bridges dimensionality reduction techniques with deep learning architectures. This synergy not only facilitates efficient feature representation but also ensures that the most significant variance directions in the data are captured by the network, promoting better generalization and performance.
+This expected value or mean effectively acts as a prototype for the feature that the neuron has learned to recognize \citep{li2018deep}. It represents the 'ideal' or 'typical' input for that neuron, around which the neuron's response varies. This prototype interpretation can provide valuable insights into the feature extraction process of neural networks and may lead to more interpretable models and improved network architectures.
 
-\subsection{Practical Implications}
+\subsection{Equivalence between Abs and ReLU}
 
-The practical applications of interpreting neural networks through Mahalanobis distance are manifold. In image classification, for instance, neurons can be visualized as prototypes representing class centers, providing intuitive insights into the classification process. In anomaly detection, the framework enables the assignment of anomaly scores based on the distance of data points from learned cluster centers, enhancing the model's ability to identify irregular patterns.
+This work stems from a desire to interpret neural network internals. While our analysis of standard MLP architecture leads to an L1 approximation of the Mahalanobis distance, necessitating an Abs activation, we posit that ReLU can provide comparable information and may be interpretable within the same framework.
 
-Moreover, the framework informs architectural design choices, particularly in the selection and configuration of activation functions. By opting for Absolute Value (Abs) activations or appropriately paired ReLU units, practitioners can design networks that inherently perform distance-based measurements, thereby improving interpretability and stability during training.
+Given a confidence bound $\delta$, we observe:
 
-\subsection{Training Dynamics and Stability}
+\begin{itemize}
+    \item For Abs activation: The preceding linear layer learns to output $\{-\delta, +\delta\}$, with the decision boundary intersecting the cluster mean.
+    \item For ReLU activation: The preceding linear layer can position its decision boundary just outside the cluster, learning to output $\{0, 2\delta\}$.
+\end{itemize}
 
-The distance-based framework influences training dynamics by promoting stable gradient flows and consistent weight updates. Abs activations, by preserving both positive and negative deviations, ensure that gradients remain informative and do not diminish, addressing issues related to vanishing gradients commonly encountered in deep networks. In contrast, ReLU activations, while effective in maintaining gradient flow for positive inputs, require architectural adjustments to capture negative deviations, which can introduce complexity but also flexibility in feature representation.
+Subsequent layers in the network can adapt to either output range. This suggests a functional equivalence between Abs and ReLU in this context.
 
-The alignment of weights with principal components further contributes to training stability by ensuring that the most significant variance directions are prioritized, reducing the likelihood of overfitting to noise and enhancing the network's ability to generalize from training data.
+Techniques developed to enhance learning and interpretation with Abs activation functions may be adaptable to the more commonly used ReLU, potentially bridging theoretical insights with practical neural architectures.
 
-\subsection{Limitations and Challenges}
+\subsection{Activations as Distance Metrics}
 
-Despite its strengths, the proposed framework is not without limitations. One primary assumption is that the data distribution can be well-approximated by a multivariate Gaussian distribution. In scenarios where data exhibits complex, non-Gaussian distributions, the approximation may be less accurate, potentially affecting the interpretability and performance of the network.
+Traditional neural networks typically employ an ``intensity metric model,'' where larger activation values indicate stronger feature presence. In contrast, a ``distance metric model'' interprets smaller activation values as indicating closer proximity to a learned feature or prototype \citep{broomhead1988radial}. The following observations suggest directions for future work:
 
-Additionally, extending the framework to deeper and more complex architectures, such as convolutional or recurrent neural networks, presents challenges. The interplay between multiple layers and hierarchical feature representations requires further exploration to maintain the integrity of distance-based interpretations across different network depths and configurations.
+\begin{itemize}
+    \item Distance and intensity metrics can be interconverted through negation.
+    \item Subsequent layer weights can apply their own negation, obscuring the metric type learned by internal nodes.
+    \item Distance metrics are incompatible with sparse layer output.
+    \item Most error functions (e.g., Cross Entropy Loss, Hinge Loss) are designed for intensity metrics. Output layers using Abs activation should be modified accordingly.
+    \item The Gaussian connection suggests transforming distance metrics through exponential ($y=e^{-x^2}$) or Laplace ($y=e^{-|x|}$) functions. These may suffer from vanishing gradients. An alternative approximation could combine Abs and ReLU: $y=\text{ReLU}(-\text{Abs}(x) + \text{confidence\_bound})$.
+    \item Some neural network architectures, such as Radial Basis Function networks \citep{broomhead1988radial}, have employed distance metrics, but they are not widely adopted.
+    \item There may exist regularization techniques that encourage distance metric learning \citep{weinberger2009distance}.
+\end{itemize}
 
-Moreover, while Abs activations offer a direct approximation of distance metrics, their non-differentiability at zero can pose optimization challenges. Addressing these issues may necessitate the development of novel activation functions or architectural modifications to ensure smooth and effective training processes.
+\subsection{Model Initialization and Pretraining}
 
-\subsection{Broader Impact and Future Directions}
+The interpretation of neurons as learning distances from cluster means suggests novel approaches to model initialization and pretraining. This perspective offers a potential alternative to standard random initialization techniques \citep{kamilov2017survey}.
 
-The establishment of a mathematical connection between neural networks and Mahalanobis distance has far-reaching implications for the field of machine learning. It not only enhances the interpretability of neural networks but also provides a principled foundation for designing more robust and efficient architectures. Future research can build upon this framework to explore its integration with probabilistic models, extend it to a wider range of activation functions, and validate its efficacy across diverse datasets and applications.
+Given randomly initialized weights $\mathbf{W}$, we propose setting the bias $b$ such that the decision boundary passes through a data point or cluster centroid:
 
-Furthermore, the framework opens avenues for developing user-friendly tools and software libraries that implement distance-based neural network components, facilitating broader adoption and experimentation within the research community. By fostering a deeper understanding of neural network mechanics through statistical principles, this work contributes to the ongoing quest for transparent, reliable, and interpretable machine learning models.
+\begin{equation}
+    b = -\mathbf{W} \cdot \boldsymbol{\mu}
+\end{equation}
 
-\subsection{Conclusion}
+where $\boldsymbol{\mu}$ represents a chosen data point or cluster centroid.
 
-In summary, interpreting neural networks through the Mahalanobis distance framework offers a novel and mathematically grounded approach to understanding and enhancing neural network operations. By aligning network weights with principal components and utilizing distance-based activation functions, we achieve greater interpretability, stability, and robustness in neural network models. While challenges remain in extending this framework to more complex architectures and diverse data distributions, the foundational connections established herein pave the way for significant advancements in neural network theory and practice.
+This initialization strategy could offer several potential advantages:
 
+\begin{itemize}
+    \item Faster convergence by starting with meaningful decision boundaries
+    \item Improved interpretability of initial network states
+    \item Potential for better generalization by incorporating data distribution information from the start
+\end{itemize}
+
+Future work could explore:
+\begin{itemize}
+    \item Empirical comparisons with standard initialization techniques (e.g., He, Xavier)
+    \item Extensions to deep networks, considering layerwise or global clustering approaches
+    \item Combination with other pretraining methods, such as autoencoders or contrastive learning
+    \item Theoretical analysis of the impact on gradient flow and optimization dynamics
+\end{itemize}
+
+\subsection{Model Translation and Componentization}
+
+The interpretation of neurons as principal components of Gaussians suggests a potential homomorphism between neural networks and hierarchical Gaussian Mixture Models (GMMs) \citep{jacobs1991adaptive}. This perspective opens up several promising avenues for research and application.
+
+It may be possible to directly convert between neural networks and GMMs. This translation could offer several benefits:
+
+\begin{itemize}
+    \item Enhanced interpretability of neural networks through their GMM counterparts
+    \item Ability to leverage well-established statistical techniques for GMMs in neural network analysis
+    \item Potential for hybrid models that combine the strengths of both paradigms
+\end{itemize}
+
+The locality properties of Gaussians suggest a novel approach to managing large neural networks:
+
+\begin{itemize}
+    \item Decomposition of large networks into smaller, context-specific subnetworks
+    \item Offline storage of these subnetworks, with dynamic loading based on data context
+    \item Potential for improved memory efficiency and faster inference in large-scale applications
+\end{itemize}
+
+This componentization approach could address challenges in deploying large models on resource-constrained devices or in latency-sensitive applications.
