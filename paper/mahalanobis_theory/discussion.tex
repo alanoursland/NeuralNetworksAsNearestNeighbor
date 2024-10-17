@@ -9,7 +9,7 @@ We discuss implications, potential impact and future work of this reframing of l
 
 The concept of expected value or mean is fundamental in statistics and machine learning, providing a central tendency that characterizes a distribution. In the context of neural networks, identifying an expected value for each neuron can offer insights into the features it recognizes and how it processes information.
 
-By interpreting linear nodes as principal components of Gaussian approximations of data clusters, we can potentially identify a mean value for the data points recognized by each neuron. This interpretation provides a probabilistic perspective on neural network operations and enhances our understanding of their internal representations.
+By interpreting linear nodes as principal components of Gaussian approximations of data clusters, we can potentially identify a mean value for the data points recognized by each neuron. This probabilistic interpretation of neural network operations enhances our understanding of their internal representations.
 
 As a linear separator, a neuron with inputs in $\mathbb{R}^n$ defines a hyperplane with $(n-1)$ dimensions and a normal vector in 1 dimension. The normal vector represents the Gaussian direction, with the mean being somewhere on the hyperplane. There are many techniques that could be successful at this including projecting data onto the normal vector and clustering, weighted averages using functions of the inverse distances, boundary constraints, optimization searches and manifold analysis.
 
@@ -17,13 +17,13 @@ This expected value or mean effectively acts as a prototype for the feature that
 
 \subsection{Equivalence between Abs and ReLU}
 
-This work stems from a desire to interpret neural network internals. While our analysis of standard MLP architecture leads to an L1 approximation of the Mahalanobis distance, necessitating an Abs activation, we posit that ReLU can provide comparable information and may be interpretable within the same framework.
+This work stems from a desire to interpret neural network internals. While our analysis of standard MLP architecture leads to an $\ell_1$ approximation of the Mahalanobis distance, and necessitates an Abs activation, we posit that ReLU can provide comparable information and may be interpretable within the same framework.
 
 Given a confidence bound $\delta$, we observe:
 
 \begin{itemize}
     \item For Abs activation: The preceding linear layer learns to output $\{-\delta, +\delta\}$, with the decision boundary intersecting the cluster mean.
-    \item For ReLU activation: The preceding linear layer can position its decision boundary just outside the cluster, learning to output $\{0, 2\delta\}$.
+    \item For ReLU activation: The preceding linear layer can position its decision boundary just outside the cluster, learning to output values between $\{0, 2\delta\}$.
 \end{itemize}
 
 Subsequent layers in the network can adapt to either output range. This suggests a functional equivalence between Abs and ReLU in this context.

@@ -7,7 +7,7 @@ In this section, we develop the mathematical foundation that connects neural net
 
 \subsection{Mahalanobis Distance for a Multivariate Gaussian Distribution}
 
-A multivariate Gaussian (normal) distribution is a fundamental concept in statistics, describing a \(d\)-dimensional random vector \(\mathbf{x} \in \mathbb{R}^d\) with a mean vector \(\boldsymbol{\mu} \in \mathbb{R}^d\) and a covariance matrix \(\boldsymbol{\Sigma} \in \mathbb{R}^{d \times d}\) \citep{bishop2006pattern}. We denote this distribution as \(\mathbf{x} \sim N(\boldsymbol{\mu}, \boldsymbol{\Sigma})\).
+A multivariate Gaussian (Normal) distribution is a fundamental concept in statistics, describing a \(d\)-dimensional random vector \(\mathbf{x} \in \mathbb{R}^d\) with a mean vector \(\boldsymbol{\mu} \in \mathbb{R}^d\) and a covariance matrix \(\boldsymbol{\Sigma} \in \mathbb{R}^{d \times d}\) \citep{bishop2006pattern}. We denote this distribution as \(\mathbf{x} \sim N(\boldsymbol{\mu}, \boldsymbol{\Sigma})\).
 
 The Mahalanobis distance quantifies the distance between a point \(\mathbf{x}\) and the mean \(\boldsymbol{\mu}\) of a distribution, while considering the covariance structure of the data \citep{mahalanobis1936generalized, demaesschalck2000mahalanobis}. It is defined as:
 
@@ -50,9 +50,9 @@ D_M(\mathbf{x}) &= \sqrt{ (\mathbf{x} - \boldsymbol{\mu})^\top \mathbf{V} \bolds
 \label{eq:mahalanobis_pca_l2}
 \end{align}
 
-where $\| \cdot \|_2$ denotes the Euclidean (L2) norm. 
+where $\| \cdot \|_2$ denotes the Euclidean ($\ell_2$) norm. 
 
-This shows that the Mahalanobis distance can also be expressed as the L2 norm of the number of standard deviations of \(\mathbf{x}\) along each principal component.
+This shows that the Mahalanobis distance can also be expressed as the $\ell_2$ norm of the number of standard deviations of \(\mathbf{x}\) along each principal component.
 
 \subsection{Connecting Neural Networks to Mahalanobis Distance}
 
@@ -114,17 +114,24 @@ We can select a rotation matrix \(\mathbf{R} \in SO(n)\) such that:
     
 The Mahalanobis distance for whitened data remains invariant under the application of rotation matrices. If we transform the rotated basis back to the original space, we end up with a whitening basis whose component vectors may not be orthogonal.
 
-This implies that, although linear nodes can represent principal components, they are unlikely to actually learn the principal components when estimating Mahalanobis distances. Instead, they are expected to learn an basis that effectively whitens the data for use in the Mahalanobis distance estimation. However, the decision boundary of the learned hyperplane should still pass through the data mean.
+This implies that, although linear nodes can represent principal components, they are unlikely to precisely learn the principal components when estimating Mahalanobis distances. Instead, they are expected to learn a basis that effectively whitens the data. However, the decision boundary of the learned hyperplane should still pass through the data mean.
 
 \subsection{Approximating Mahalanobis Distance with Neural Networks}
 
-Following the Abs function with another linear node allows for a summation of the principal component whitened data, leading to the following expression for the Mahalanobis distance:
+In the neural network architecture, each Abs-activated linear node computes the deviation along a specific whitening component. The next linear node sums these values, thereby approximating the overall Mahalanobis distance through an $\ell_1$ norm. 
 
 \begin{equation}
     \label{eq:mahalanobis_L1}
-    y = \sum \left| \mathbf{W_c} \mathbf{x} - \mathbf{b_c} \right|,
+    D_{M,\ell_1}(x) = \sum \left| \mathbf{W_i} \mathbf{x} - \mathbf{b_i} \right|,
 \end{equation}
 
-L1 norms have been utilized as an effective alternative to L2 norms in various high-dimensional applications \citep{bernhardsson2018annoy}. In finite-dimensional vector spaces, all norms are equivalent up to constant factors, allowing L1 norms to bound and be bounded by L2 norms \citep{kreyszig1978introductory}. Moreover, L1 norms offer robustness to outliers, making them well-suited for training contexts with unexpected or noisy data \citep{candes2005decoding}. 
+This observation is motivated by a desire to analyze and maintain the behavior of well-studied standard neural network architectures. It offers several additional benefits over $\ell_2$ including computational efficiency and robustness to outliers and sparse data, especially in high dimensional spaces \cite{boyd2004convex, horn2012matrix}.
 
-In the neural network architecture, each Abs-activated linear node computes the absolute deviation along a specific principal component direction. The subsequent summation node aggregates these deviations, thereby approximating the overall Mahalanobis distance through an L1 norm-based aggregation of L2-like components. This approach leverages the computational efficiency and robustness of L1 norms while maintaining the interpretability of Mahalanobis distance in high-dimensional spaces.
+$\ell_1$ norms have been utilized as an effective alternative to $\ell_2$ norms in various high-dimensional applications \citep{bernhardsson2018annoy, tibshirani1996lasso}. It is well-known that the $\ell_1$ and $\ell_2$ norms are related by the inequality:
+
+\[
+\|x\|_2 \leq \|x\|_1 \leq \sqrt{n} \|x\|_2,
+\]
+where \( x \in \mathbb{R}^n \). 
+
+In high-dimensional spaces, the $\ell_1$ norm is a reasonable approximation of the $\ell_2$ norm \cite{vershynin2018high}. 
