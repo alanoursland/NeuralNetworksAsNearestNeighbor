@@ -5,7 +5,7 @@
 
 Activation functions introduce non-linearity in neural networks, enabling them to model complex data relationships. The field has evolved from early sigmoid and hyperbolic tangent functions \citep{rosenblatt1958perceptron} to the widely adopted Rectified Linear Unit (ReLU) \citep{nair2010rectified}, which mitigates the vanishing gradient problem in deep networks \citep{glorot2010understanding, krizhevsky2012imagenet}.
 
-ReLU variants intended to address its shortcomings include Leaky ReLU {maas2013rectifier}; Parametric ReLU (PReLU) \citep{he2015delving}; and Exponential Linear Unit (ELU) \citep{clevert2015fast}. Additionally, newer activation functions like Swish \citep{ramachandran2017searching} and GELU \citep{hendrycks2016gaussian} have been proposed to further enhance network performance and training dynamics.
+ReLU variants intended to address its shortcomings include Leaky ReLU \citep{maas2013rectifier}; Parametric ReLU (PReLU) \citep{he2015delving}; and Exponential Linear Unit (ELU) \citep{clevert2015fast}. Additionally, newer activation functions like Swish \citep{ramachandran2017searching} and GELU \citep{hendrycks2016gaussian} have been proposed to further enhance network performance and training dynamics.
 
 Tanh and Sigmoid activations are still used in many architectures such as recurrent neural networks (RNNs) and Long Short-Term Memory (LSTM) networks \citep{hochreiter1997long}.
 
@@ -19,7 +19,9 @@ Distance metrics are fundamental in clustering algorithms, determining how simil
     \item K-Means typically uses Euclidean distance ($\ell_2$ norm), assuming spherical clusters and equal feature importance \citep{macqueen1967some}.
     
     \item Gaussian Mixture Models (GMMs) employ Mahalanobis distance, accounting for data covariance and modeling elliptical clusters \citep{reynolds2009gaussian}.
-    
+
+    \item Radial Basis Function (RBF) networks use Gaussian-like activations based on Euclidean distance, creating spherical clusters around learned centers \citep{broomhead1988radial}.
+
     \item Hierarchical and Agglomerative Clustering can use various metrics (Euclidean, Manhattan, correlation-based), affecting dendrogram shape \citep{murtagh1983survey}.
     
     \item DBSCAN, while often using Euclidean distance, can employ any metric for density-based clustering \citep{ester1996density}.
@@ -35,6 +37,8 @@ Understanding these distance metrics and their properties is crucial for selecti
 
 The interpretability of neural networks remains a critical challenge, often referred to as the "black-box" nature of these models \citep{lipton2016mythos}. In applications requiring transparency, such as healthcare and finance, understanding the decision-making processes of neural networks is paramount \citep{rudin2019stop}. Various approaches have been developed to enhance interpretability, including feature visualization, saliency maps, and prototype-based methods \citep{erhan2009visualizing, simonyan2013deep, kim2016interpreting}.
 
-Recent research has aimed to bridge neural networks with statistical and probabilistic models to provide a more principled understanding of their internal mechanisms \citep{bengio2013representation, goodfellow2016deep}. Bayesian neural networks, for instance, incorporate uncertainty estimates that align network outputs with probabilistic interpretations \citep{neal1996bayesian, blundell2015weight}. Additionally, connections between neural networks and kernel methods have been explored, highlighting how deep architectures can implicitly perform kernel-based feature transformations \citep{rahimi2008random}.
+Recent advancements in explainable AI (XAI) have introduced tools like SHAP (SHapley Additive exPlanations) \citep{lundberg2017unified} and LIME (Local Interpretable Model-Agnostic Explanations) \citep{ribeiro2016should}, which provide both local and global insights into model predictions. SHAP offers a consistent approach to feature attribution grounded in cooperative game theory, providing robust explanations even for complex models like deep neural networks \citep{lundberg2017unified,markov2020shap}. LIME, by contrast, offers localized interpretability by approximating the model’s behavior with simpler, interpretable models, making it particularly useful for individual predictions \citep{ribeiro2016should,ali2024explainable}.
 
-However, there is a notable gap in establishing direct mathematical connections between neural network components, specifically activation functions, and statistical distance measures like the Mahalanobis distance. Addressing this gap can provide deeper insights into feature learning and decision-making processes, thereby enhancing the interpretability and robustness of neural network models.
+Connections between neural networks and statistical models, such as Bayesian neural networks \citep{neal1996bayesian,blundell2015weight}, continue to provide a probabilistic framework for understanding model uncertainty. Moreover, concept-based interpretability methods like TCAV (Testing with Concept Activation Vectors) \citep{kim2018interpretability} have emerged, allowing for a more granular analysis of what neural networks learn, which can be crucial in high-stakes domains like healthcare \citep{hanif2024systematic}.
+
+While significant strides have been made in explaining model behavior, there remains a gap in establishing direct mathematical connections between neural network components, specifically activation functions, and statistical distance measures like the Mahalanobis distance. Addressing this gap can provide deeper insights into feature learning and decision-making processes, enhancing both interpretability and robustness of neural network models.
