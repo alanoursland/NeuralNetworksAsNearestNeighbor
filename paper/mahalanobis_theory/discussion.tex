@@ -7,89 +7,54 @@ We discuss implications, potential impact and future work of this reframing of l
 
 \subsection{Expected Value Interpretation}
 
-The concept of expected value or mean is fundamental in statistics and machine learning, providing a central tendency that characterizes a distribution. In the context of neural networks, identifying an expected value for each neuron can offer insights into the features it recognizes and how it processes information.
-
-By interpreting linear nodes as principal components of Gaussian approximations of data clusters, we can potentially identify a mean value for the data points recognized by each neuron. This probabilistic interpretation of neural network operations enhances our understanding of their internal representations.
-
-As a linear separator, a neuron with inputs in $\mathbb{R}^n$ defines a hyperplane with $(n-1)$ dimensions and a normal vector in 1 dimension. The normal vector represents the Gaussian direction, with the mean being somewhere on the hyperplane. There are many techniques that could be successful at this including projecting data onto the normal vector and clustering, weighted averages using functions of the inverse distances, boundary constraints, optimization searches and manifold analysis.
-
-This expected value or mean effectively acts as a prototype for the feature that the neuron has learned to recognize \citep{li2018deep}. It represents the 'ideal' or 'typical' input for that neuron, around which the neuron's response varies. This prototype interpretation can provide valuable insights into the feature extraction process of neural networks and may lead to more interpretable models and improved network architectures.
+The expected value, or mean, is a central concept in statistics, representing the average tendency of a distribution. In neural networks, finding the expected value for each neuron would reveals the features it recognizes. Interpreting linear nodes as approximations of Gaussian principal components  provides a path towards recoving the neuron mean value. The estimated mean serves as a prototype for the feature that the neuron has learned to recognize \citep{li2018deep}, representing the 'ideal' input for that neuron. This interpretation enhances the transparency of the feature extraction process, potentially leading to more interpretable models and improved architectures.
 
 \subsection{Equivalence between Abs and ReLU}
 
-This work stems from a desire to interpret neural network internals. While our analysis of standard MLP architecture leads to an $\ell_1$ approximation of the Mahalanobis distance, and necessitates an Abs activation, we posit that ReLU can provide comparable information and may be interpretable within the same framework.
-
-Given a confidence bound $\delta$, we observe:
+While our analysis of linear layers suggests the use of Abs activation, we propose that ReLU can provide comparable information and may be interpretable within the same framework. Given a confidence bound $\delta$, we observe:
 
 \begin{itemize}
     \item For Abs activation: The preceding linear layer learns to output $\{-\delta, +\delta\}$, with the decision boundary intersecting the cluster mean.
     \item For ReLU activation: The preceding linear layer can position its decision boundary just outside the cluster, learning to output values between $\{0, 2\delta\}$.
 \end{itemize}
 
-Subsequent layers in the network can adapt to either output range. This suggests a functional equivalence between Abs and ReLU in this context.
-
-Techniques developed to enhance learning and interpretation with Abs activation functions may be adaptable to the more commonly used ReLU, potentially bridging theoretical insights with practical neural architectures.
+Subsequent layers in the network can adapt to either output range. This suggests a functional equivalence between Abs and ReLU in this context. Techniques developed to enhance learning and interpretation with Abs activation functions may be adaptable to ReLU, potentially bridging theoretical insights with practical neural architectures.
 
 \subsection{Activations as Distance Metrics}
 
-Traditional neural networks typically employ an ``intensity metric model,'' where larger activation values indicate stronger feature presence. In contrast, a ``distance metric model'' interprets smaller activation values as indicating closer proximity to a learned feature or prototype \citep{broomhead1988radial}. The following observations suggest directions for future work:
+Traditional neural networks typically employ an ``intensity metric model,'' where larger activation values indicate stronger feature presence. In contrast, a ``distance metric model'' interprets smaller activation values as indicating closer proximity to a learned feature or prototype. The following observations suggest directions for future work:
 
 \begin{itemize}
-    \item Distance and intensity metrics can be interconverted through negation.
-    \item Subsequent layer weights can apply their own negation, obscuring the metric type learned by internal nodes.
-    \item Distance metrics are incompatible with sparse layer output.
-    \item Most error functions (e.g., Cross Entropy Loss, Hinge Loss) are designed for intensity metrics. Output layers using Abs activation should be modified accordingly.
-    \item The Gaussian connection suggests transforming distance metrics through exponential ($y=e^{-x^2}$) or Laplace ($y=e^{-|x|}$) functions. These may suffer from vanishing gradients. An alternative approximation could combine Abs and ReLU: $y=\text{ReLU}(-\text{Abs}(x) + \text{confidence\_bound})$.
-    \item Some neural network architectures, such as Radial Basis Function networks \citep{broomhead1988radial}, have employed distance metrics, but they are not widely adopted.
+    \item Most error functions (e.g., Cross Entropy Loss, Hinge Loss) are designed for intensity metrics. Output layers using Abs activation may require modification of their output values.
+    \item While some architectures, like Radial Basis Function networks \citep{broomhead1988radial}, utilize distance metrics, they are not widely adopted in modern deep learning.
+    \item Distance metrics conflict with the goal of sparse output layers. In a distance metric model, zero is the strongest signal, making it illogical for most outputs to have the strongest signal.
+    \item The Gaussian connection suggests transforming distance metrics through exponential ($y=e^{-x^2}$) or Laplace ($y=e^{-|x|}$) functions to convert them into intensity metrics. However, these may suffer from vanishing gradients. A approximation of these functions could combine Abs and ReLU: $y=\text{ReLU}(-\text{Abs}(x) + \text{confidence\_bound})$.
+    \item Distance and intensity metrics can be interconverted through negation. Subsequent layer weights can apply their own negation, obscuring the metric type learned by internal nodes.
     \item There may exist regularization techniques that encourage distance metric learning \citep{weinberger2009distance}.
 \end{itemize}
 
 \subsection{Model Initialization and Pretraining}
 
-The interpretation of neurons as learning distances from cluster means suggests novel approaches to model initialization and pretraining. This perspective offers a potential alternative to standard random initialization techniques \citep{kamilov2017survey}.
+Interpreting neurons as learning distances from cluster means suggests novel approaches to model initialization and pretraining. This perspective offers an alternative to standard random initialization techniques \citep{kamilov2017survey} by incorporating data-driven insights into the model's starting configuration.
 
-Given randomly initialized weights $\mathbf{W}$, we propose setting the bias $b$ such that the decision boundary passes through a data point or cluster centroid:
+Rather than initializing with random weights, an approach could involve clustering the input data (e.g., using k-means) and calculating the covariance of each cluster. Applying Principal Component Analysis (PCA) to these covariance matrices can provide a basis for directly initializing network parameters. This strategy leverages the structure of the data to guide the network's early learning stages. This process, and approximations of this process, may offer several advantages:
 
-\begin{equation}
-    b = -\mathbf{W} \cdot \boldsymbol{\mu}
-\end{equation}
-
-where $\boldsymbol{\mu}$ represents a chosen data point or cluster centroid.
-
-This initialization strategy could offer several potential advantages:
-
-\begin{itemize}
-    \item Faster convergence by starting with meaningful decision boundaries
-    \item Improved interpretability of initial network states
-    \item Potential for better generalization by incorporating data distribution information from the start
-\end{itemize}
-
-Future work could explore:
-\begin{itemize}
-    \item Empirical comparisons with standard initialization techniques (e.g., He, Xavier)
-    \item Extensions to deep networks, considering layerwise or global clustering approaches
-    \item Combination with other pretraining methods, such as autoencoders or contrastive learning
-    \item Theoretical analysis of the impact on gradient flow and optimization dynamics
-\end{itemize}
+\begin{itemize} \item Faster convergence by starting with parameters informed by the data distribution \item Enhanced interpretability, as network weights are aligned with meaningful features from the outset \item Improved generalization by incorporating information about cluster structures \end{itemize}
 
 \subsection{Model Translation and Componentization}
 
-The interpretation of neurons as principal components of Gaussians suggests a potential homomorphism between neural networks and hierarchical Gaussian Mixture Models (GMMs) \citep{jacobs1991adaptive}. This perspective opens up several promising avenues for research and application.
-
-It may be possible to directly convert between neural networks and GMMs. This translation could offer several benefits:
+The interpretation of neurons as principal components of Gaussians suggests a potential homomorphism between neural networks and hierarchical Gaussian Mixture Models (GMMs) \citep{jacobs1991adaptive}. This opens the possibility of directly translating neural networks into GMMs, offering several potential advantages:
 
 \begin{itemize}
-    \item Enhanced interpretability of neural networks through their GMM counterparts
-    \item Ability to leverage well-established statistical techniques for GMMs in neural network analysis
-    \item Potential for hybrid models that combine the strengths of both paradigms
+    \item Enhanced interpretability of neural networks through their GMM equivalents. 
+    \item Ability to apply established statistical techniques from GMM analysis to neural networks.
+    \item Potential for hybrid models that combine the strengths of both neural networks and GMMs.
+    \item Decomposition of large networks into smaller, context-specific subnetworks.
+    \item Offline storage of these subnetworks, with dynamic loading based on data context.
+    \item Potential for improved memory efficiency and faster inference in large-scale applications.
 \end{itemize}
 
-The locality properties of Gaussians suggest a novel approach to managing large neural networks:
+\subsection{Direct use of Mahalanobis equation}
 
-\begin{itemize}
-    \item Decomposition of large networks into smaller, context-specific subnetworks
-    \item Offline storage of these subnetworks, with dynamic loading based on data context
-    \item Potential for improved memory efficiency and faster inference in large-scale applications
-\end{itemize}
+Equation \ref{eq:mahalanobis_single_component} explicitly incorporates the variance eigenvalue $\lambda$, the unit eigenvector $\mathbf{v}$, and the mean $\boldsymbol{\mu}$. Batch Normalization already makes use of $\lambda$ and $\boldsymbol{\mu}$ \citep{ioffe2015batch}, while the nGPT model employs unit weight vectors, which are analogous to $\mathbf{v}$ \citep{loshchilov2024ngptnormalizedtransformerrepresentation}. Decomposing the standard linear layer equation $y = Wx + b$ in a manner similar to the Mahalanobis equation may lead to improvements in both training speed and representation quality.
 
-This componentization approach could address challenges in deploying large models on resource-constrained devices or in latency-sensitive applications.

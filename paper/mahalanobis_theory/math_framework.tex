@@ -2,6 +2,7 @@
 
 \section{Mathematical Framework}
 \label{sec:math_framework}
+Gaussians fall out of second-order Taylor series approximations \citep[Section 4.4]{bishop2006pattern}, making them effective for modeling data, even when the data is not explicitly Gaussian. Gaussian mixtures can serve as piecewise linear approximations of complex distributions and surfaces. They are a good choice for modeling point clouds such as the ones neural networks are trained on.
 
 In this section, we develop the mathematical foundation that connects neural networks to the Mahalanobis distance, thereby providing a framework for interpreting neural network operations through the lens of statistical distance metrics. We begin by revisiting key concepts related to Gaussian distributions and the Mahalanobis distance, followed by a detailed exploration of how neural network components, particularly linear layers and activation functions, can approximate these distance metrics. This framework not only enhances our understanding of neural network behavior but also lays the groundwork for leveraging statistical principles to improve network interpretability and training dynamics.
 
@@ -50,9 +51,7 @@ D_M(\mathbf{x}) &= \sqrt{ (\mathbf{x} - \boldsymbol{\mu})^\top \mathbf{V} \bolds
 \label{eq:mahalanobis_pca_l2}
 \end{align}
 
-where $\| \cdot \|_2$ denotes the Euclidean ($\ell_2$) norm. 
-
-This shows that the Mahalanobis distance can also be expressed as the $\ell_2$ norm of the number of standard deviations of \(\mathbf{x}\) along each principal component.
+where $\| \cdot \|_2$ denotes the Euclidean ($\ell_2$) norm. This shows that the Mahalanobis distance can also be expressed as the $\ell_2$ norm of the number of standard deviations of \(\mathbf{x}\) along each principal component.
 
 \subsection{Connecting Neural Networks to Mahalanobis Distance}
 
@@ -63,7 +62,7 @@ We consider the Mahalanobis distance along a single principal component.
     D_{M,i}(\mathbf{x}) = \left| \lambda_i^{-1/2} \mathbf{v}_i^\top (\mathbf{x} - \boldsymbol{\mu}) \right|,
 \end{equation}
 
-This equation projecting the centered data $(\mathbf{x} - \boldsymbol{\mu})$ onto the direction of variance defined by the principal component eigenvector and scales by the inverse square root of the eigenvalue (variance).
+This equation projects the centered data $(\mathbf{x} - \boldsymbol{\mu})$ onto the direction of variance defined by the principal component eigenvector and scales it by the inverse square root of the eigenvalue.
 
 Let 
 \begin{align}
@@ -78,31 +77,21 @@ We can simplify Equation \eqref{eq:mahalanobis_single_component} to
     D_{M,i}(\mathbf{x}) = \left| \mathbf{W} \mathbf{x} - \mathbf{b} \right|,
 \end{equation}
 
-This is identical to the equation for a linear layer where $\boldsymbol{W}$ represents the weight matrix, $\boldsymbol{b}$ the bias vector, and the Abs function serves as the activation function.
-
-Linear nodes with Abs activations can be interpreted as 1d Gaussians along a direction of variance with the decision boundary passing through the mean of the modelled cluster.
-
-Extending this to all principal components, the Mahalanobis distance can be represented as a multiple linear nodes, each corresponding to a principal component, followed by an Abs activation. This layered structure inherently accounts for the covariance structure of the data, effectively 'whitening' the input.
+This is identical to the equation for a linear layer where $\boldsymbol{W}$ represents the weight matrix, $\boldsymbol{b}$ the bias vector, and the Abs function serves as the activation function. Linear nodes with Abs activations can be interpreted as 1d Gaussians along a direction of variance with the decision boundary passing through the mean of the modelled cluster. Extending this to all principal components, the Mahalanobis distance can be represented as a multiple linear nodes, each corresponding to a principal component, followed by an Abs activation. This layered structure inherently accounts for the covariance structure of the data, effectively 'whitening' the input.
 
 \subsection{Non-Uniqueness of Whitening}
 
-Calculating the Mahalanobis distance along each principal component results in a whitened data set. 
-
-Whitening data is defined as follows:
+Calculating the Mahalanobis distance along each principal component results in a whitened data set. However the vectors to generate whitened data are not unique. Whitening data is defined as follows:
 
 \[
 \mathbf{x}_w = \boldsymbol{\Lambda}^{-1/2} \mathbf{V}^\top (\mathbf{x} - \boldsymbol{\mu}),
 \]
 
-where \(\mathbf{x}_w\) follows a distribution \(\mathcal{N}(0, I)\).
-
-The Mahalanobis distance can then be expressed as:
+where \(\mathbf{x}_w\) follows a distribution \(\mathcal{N}(0, I)\). The Mahalanobis distance can then be expressed as:
 
 \[
 D_M(\mathbf{x}_w) = \|\mathbf{x}_w\|_2.
 \]
-
-However the vectors to generate whitened data are not unique.
 
 We can select a rotation matrix \(\mathbf{R} \in SO(n)\) such that:
 
@@ -112,26 +101,22 @@ We can select a rotation matrix \(\mathbf{R} \in SO(n)\) such that:
                       &= D_M\left( \boldsymbol{\Lambda}^{-1/2} (\mathbf{V}^\top \mathbf{R}) (\mathbf{x} - \boldsymbol{\mu}) \right).
     \end{align}
     
-The Mahalanobis distance for whitened data remains invariant under the application of rotation matrices. If we transform the rotated basis back to the original space, we end up with a whitening basis whose component vectors may not be orthogonal.
-
-This implies that, although linear nodes can represent principal components, they are unlikely to precisely learn the principal components when estimating Mahalanobis distances. Instead, they are expected to learn a basis that effectively whitens the data. However, the decision boundary of the learned hyperplane should still pass through the data mean.
+The Mahalanobis distance for whitened data remains invariant under the application of rotation matrices in the whitened space. If we transform the rotated basis back to the original space, we end up with a whitening basis whose component vectors may not be orthogonal. This implies that, although linear nodes can represent principal components, they are unlikely to precisely learn the principal components when estimating Mahalanobis distances. Instead, they are expected to learn any basis that whitens the data. However, the decision boundary of the learned hyperplane should still pass through the data mean. Applying an orthogonality regularization may encourage the layer to learn the actual principal components.
 
 \subsection{Approximating Mahalanobis Distance with Neural Networks}
 
-In the neural network architecture, each Abs-activated linear node computes the deviation along a specific whitening component. The next linear node sums these values, thereby approximating the overall Mahalanobis distance through an $\ell_1$ norm. 
+In this neural network architecture, each Abs-activated linear node computes the deviation along a specific whitening component. The next linear node sums these values, thereby approximating the overall Mahalanobis distance through an $\ell_1$ norm. 
 
 \begin{equation}
     \label{eq:mahalanobis_L1}
     D_{M,\ell_1}(x) = \sum \left| \mathbf{W_i} \mathbf{x} - \mathbf{b_i} \right|,
 \end{equation}
 
-This observation is motivated by a desire to analyze and maintain the behavior of well-studied standard neural network architectures. It offers several additional benefits over $\ell_2$ including computational efficiency and robustness to outliers and sparse data, especially in high dimensional spaces \cite{boyd2004convex, horn2012matrix}.
-
-$\ell_1$ norms have been utilized as an effective alternative to $\ell_2$ norms in various high-dimensional applications \citep{bernhardsson2018annoy, tibshirani1996lasso}. It is well-known that the $\ell_1$ and $\ell_2$ norms are related by the inequality:
+The $\ell_1$ norm offers several additional benefits over $\ell_2$ including computational efficiency and robustness to outliers and sparse data, especially in high dimensional spaces \cite{boyd2004convex, horn2012matrix}. $\ell_1$ norms have been utilized as an effective alternative to $\ell_2$ norms in various high-dimensional applications \citep{bernhardsson2018annoy, tibshirani1996lasso}. It is well-known that the $\ell_1$ and $\ell_2$ norms are related by the inequality:
 
 \[
 \|x\|_2 \leq \|x\|_1 \leq \sqrt{n} \|x\|_2,
 \]
 where \( x \in \mathbb{R}^n \). 
 
-In high-dimensional spaces, the $\ell_1$ norm is a reasonable approximation of the $\ell_2$ norm \cite{vershynin2018high}. 
+In high-dimensional spaces, the $\ell_1$ norm is a reasonable approximation of the $\ell_2$ norm \cite{vershynin2018high}. While there are valid reasons to use the $\ell_1$ norm over the $\ell_2$ norm, the argument presented here is primarily motivated by the desire to analyze, explain, and preserve the behavior of well-established neural network architectures.
