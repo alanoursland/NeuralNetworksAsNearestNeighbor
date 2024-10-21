@@ -77,46 +77,29 @@ We can simplify Equation \eqref{eq:mahalanobis_single_component} to
     D_{M,i}(\mathbf{x}) = \left| \mathbf{W} \mathbf{x} - \mathbf{b} \right|,
 \end{equation}
 
-This is identical to the equation for a linear layer where $\boldsymbol{W}$ represents the weight matrix, $\boldsymbol{b}$ the bias vector, and the Abs function serves as the activation function. Linear nodes with Abs activations can be interpreted as 1d Gaussians along a direction of variance with the decision boundary passing through the mean of the modelled cluster. Extending this to all principal components, the Mahalanobis distance can be represented as a multiple linear nodes, each corresponding to a principal component, followed by an Abs activation. This layered structure inherently accounts for the covariance structure of the data, effectively 'whitening' the input.
+This is identical to the equation for a linear layer where $\boldsymbol{W}$ represents the weight matrix, $\boldsymbol{b}$ the bias vector, and the Abs function serves as the activation function. Linear nodes with Abs activations can be interpreted as 1d Gaussians along a direction of variance with the decision boundary passing through the mean of the modelled cluster. 
+
+Extending this to all principal components, the Mahalanobis distance can be represented as a multiple linear nodes, each corresponding to a principal component, followed by an Abs activation. This layered structure inherently accounts for the covariance structure of the data, effectively 'whitening' the input.
+
+This is identical to the equation for a linear layer where 
+$\boldsymbol{W}$
+W represents the weight matrix, 
+$\boldsymbol{b}$
+b the bias vector, and the Abs function serves as the activation function. Each linear node with an Abs activation can be interpreted as modeling a one-dimensional Gaussian along a principal component direction, with the decision boundary passing through the mean of the modeled cluster. The layer as a whole represents a subset of principal components from a Gaussian Mixture Model (GMM) that approximates the input distribution. Since each component captures significant features individually, we do not need to aggregate them via an $\ell_2$ norm (full Mahalanobis distance computation). Instead, the subsequent layer clusters these principal component features, effectively forming a new GMM that models the outputs of the first layer.
 
 \subsection{Non-Uniqueness of Whitening}
 
-Calculating the Mahalanobis distance along each principal component results in a whitened data set. However the vectors to generate whitened data are not unique. Whitening data is defined as follows:
+The principal components of a Gaussian distribution, as used in the Mahalanobis distance, form an orthonormal set of axes. Projecting Gaussian data onto these axes transforms the distribution from an oriented ellipsoid into a spherical Gaussian, effectively converting the data from \(\mathcal{N}(\boldsymbol{\mu}, \boldsymbol{\Sigma})\) to \(\mathcal{N}(\mathbf{0}, \mathbf{I})\). This process is known as \emph{whitening}.
 
-\[
-\mathbf{x}_w = \boldsymbol{\Lambda}^{-1/2} \mathbf{V}^\top (\mathbf{x} - \boldsymbol{\mu}),
-\]
-
-where \(\mathbf{x}_w\) follows a distribution \(\mathcal{N}(0, I)\). The Mahalanobis distance can then be expressed as:
-
-\[
-D_M(\mathbf{x}_w) = \|\mathbf{x}_w\|_2.
-\]
-
-We can select a rotation matrix \(\mathbf{R} \in SO(n)\) such that:
+However, the transformation to whitened data is not unique. Specifically, any rotation applied in the whitened space results in another valid whitening transformation. Mathematically, if \(\mathbf{x}_w\) is the whitened data, then for any orthogonal rotation matrix \(\mathbf{R} \in \text{SO}(d)\), the rotated data \(\mathbf{x}_w' = \mathbf{R} \mathbf{x}_w\) is also whitened, since:
 
 \begin{align}
-    D_M(\mathbf{x}_w) &= D_M(\mathbf{R} \mathbf{x}_w) \\
-                      &= D_M\left( (\mathbf{R} \boldsymbol{\Lambda}^{-1/2} \mathbf{V}^\top) (\mathbf{x} - \boldsymbol{\mu}) \right) \\
-                      &= D_M\left( \boldsymbol{\Lambda}^{-1/2} (\mathbf{V}^\top \mathbf{R}) (\mathbf{x} - \boldsymbol{\mu}) \right).
-    \end{align}
-    
-The Mahalanobis distance for whitened data remains invariant under the application of rotation matrices in the whitened space. If we transform the rotated basis back to the original space, we end up with a whitening basis whose component vectors may not be orthogonal. This implies that, although linear nodes can represent principal components, they are unlikely to precisely learn the principal components when estimating Mahalanobis distances. Instead, they are expected to learn any basis that whitens the data. However, the decision boundary of the learned hyperplane should still pass through the data mean. Applying an orthogonality regularization may encourage the layer to learn the actual principal components.
+\operatorname{Cov}(\mathbf{x}_w') &= \operatorname{Cov}(\mathbf{R} \mathbf{x}_w) = \mathbf{R} \operatorname{Cov}(\mathbf{x}_w) \mathbf{R}^\top \\
+&= \mathbf{R} \mathbf{I} \mathbf{R}^\top = \mathbf{R} \mathbf{R}^\top = \mathbf{I}.
+\end{align}
 
-\subsection{Approximating Mahalanobis Distance with Neural Networks}
+This non-uniqueness implies that multiple sets of axes, possibly non-orthogonal in the original space, can serve as a whitening basis. When we transform the rotated basis back to the original space, we obtain a new set of basis vectors \(\mathbf{W}\) that still whiten the data but may not correspond to the original principal components.
 
-In this neural network architecture, each Abs-activated linear node computes the deviation along a specific whitening component. The next linear node sums these values, thereby approximating the overall Mahalanobis distance through an $\ell_1$ norm. 
+In the context of neural networks, this means that although linear nodes can represent directions that effectively whiten the data, they are unlikely to precisely learn the actual principal components when estimating Mahalanobis distances. Instead, they may learn any basis that achieves whitening. Nevertheless, the learned hyperplanes (decision boundaries) should still pass through the data mean \(\boldsymbol{\mu}\), allowing for prototype interpretation.
 
-\begin{equation}
-    \label{eq:mahalanobis_L1}
-    D_{M,\ell_1}(x) = \sum \left| \mathbf{W_i} \mathbf{x} - \mathbf{b_i} \right|,
-\end{equation}
-
-The $\ell_1$ norm offers several additional benefits over $\ell_2$ including computational efficiency and robustness to outliers and sparse data, especially in high dimensional spaces \cite{boyd2004convex, horn2012matrix}. $\ell_1$ norms have been utilized as an effective alternative to $\ell_2$ norms in various high-dimensional applications \citep{bernhardsson2018annoy, tibshirani1996lasso}. It is well-known that the $\ell_1$ and $\ell_2$ norms are related by the inequality:
-
-\[
-\|x\|_2 \leq \|x\|_1 \leq \sqrt{n} \|x\|_2,
-\]
-where \( x \in \mathbb{R}^n \). 
-
-In high-dimensional spaces, the $\ell_1$ norm is a reasonable approximation of the $\ell_2$ norm \cite{vershynin2018high}. While there are valid reasons to use the $\ell_1$ norm over the $\ell_2$ norm, the argument presented here is primarily motivated by the desire to analyze, explain, and preserve the behavior of well-established neural network architectures.
+To encourage the network to learn the actual principal components, one could apply an orthogonality constraint or regularization on the weight matrices. This regularization promotes learning orthogonal directions, aligning the learned basis with the true principal components of the data clusters and providing statistically independent features.
