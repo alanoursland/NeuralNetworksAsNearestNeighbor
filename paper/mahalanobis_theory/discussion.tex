@@ -9,16 +9,27 @@ We discuss implications, potential impact and future work of this reframing of l
 
 The expected value, or mean, is a central concept in statistics, representing the average tendency of a distribution. In neural networks, finding the expected value for each neuron would reveals the features it recognizes. Interpreting linear nodes as approximations of Gaussian principal components  provides a path towards recoving the neuron mean value. The estimated mean serves as a prototype for the feature that the neuron has learned to recognize \citep{li2018deep}, representing the 'ideal' input for that neuron. This interpretation enhances the transparency of the feature extraction process, potentially leading to more interpretable models and improved architectures.
 
-\subsection{Equivalence between Abs and ReLU}
+\subsection{Equivalence between Abs and ReLU Activations}
 
-While our analysis of linear layers suggests the use of Abs activation, we propose that ReLU can provide comparable information and may be interpretable within the same framework. Given a confidence bound $\delta$, we observe:
+While our analysis utilizes linear layers with Abs activation functions to model deviations along principal component directions, ReLU activations can provide comparable information within the same framework.
 
-\begin{itemize}
-    \item For Abs activation: The preceding linear layer learns to output $\{-\delta, +\delta\}$, with the decision boundary intersecting the cluster mean.
-    \item For ReLU activation: The preceding linear layer can position its decision boundary just outside the cluster, learning to output values between $\{0, 2\delta\}$.
-\end{itemize}
+For the \emph{Abs activation}, each linear node computes:
+\begin{equation}
+\label{eq:abs_activation_compact}
+y_{\text{Abs}} = \left| \mathbf{w}^\top \mathbf{x} + b \right|,
+\end{equation}
+where the weights \(\mathbf{w}\) and bias \(b\) are set such that \(\mathbf{w}^\top \boldsymbol{\mu} + b = 0\). This centers the decision boundary at the cluster mean \(\boldsymbol{\mu}\), and within a confidence interval \(\delta\), the pre-activation output ranges from \(-\delta\) to \(+\delta\).
 
-Subsequent layers in the network can adapt to either output range. This suggests a functional equivalence between Abs and ReLU in this context. Techniques developed to enhance learning and interpretation with Abs activation functions may be adaptable to ReLU, potentially bridging theoretical insights with practical neural architectures.
+For the \emph{ReLU activation}, we adjust the bias to shift the decision boundary just outside the cluster:
+\begin{equation}
+\label{eq:relu_activation_compact}
+y_{\text{ReLU}} = \max\left( 0, -\mathbf{w}^\top \mathbf{x} - b + \delta \right).
+\end{equation}
+Here, the pre-activation output ranges from \(0\) to \(2\delta\) within the cluster. Although ReLU zeros out negative inputs, by negating the pre-activation and adjusting the bias, it effectively captures the magnitude of deviations similar to the Abs activation.
+
+The hyperplanes defined by \(\mathbf{w}\) maintain the same orientation in both cases, providing equivalent views of the cluster. Subsequent layers can adapt to either activation's output range, making Abs and ReLU functionally comparable in capturing essential features.
+
+This suggests that techniques developed for networks with Abs activations may be adaptable to ReLU activations, bridging theoretical insights with practical neural architectures commonly utilizing ReLU.
 
 \subsection{Activations as Distance Metrics}
 
@@ -43,18 +54,18 @@ Rather than initializing with random weights, an approach could involve clusteri
 
 \subsection{Model Translation and Componentization}
 
-The interpretation of neurons as principal components of Gaussians suggests a potential homomorphism between neural networks and hierarchical Gaussian Mixture Models (GMMs) \citep{jacobs1991adaptive}. This opens the possibility of directly translating neural networks into GMMs, offering several potential advantages:
+The interpretation of neurons as principal components of Gaussians suggests a potential mapping between neural networks and hierarchical Gaussian Mixture Models (GMMs) \citep{jacobs1991adaptive}. By performing PCA on the clusters in a GMM, we can extract principal components and means, converting them directly into neurons. This possibility of directly translating neural networks into GMMs offers several potential advantages:
 
 \begin{itemize}
-    \item Enhanced interpretability of neural networks through their GMM equivalents. 
-    \item Ability to apply established statistical techniques from GMM analysis to neural networks.
-    \item Potential for hybrid models that combine the strengths of both neural networks and GMMs.
-    \item Decomposition of large networks into smaller, context-specific subnetworks.
-    \item Offline storage of these subnetworks, with dynamic loading based on data context.
-    \item Potential for improved memory efficiency and faster inference in large-scale applications.
+    \item \textbf{Enhanced Interpretability}: Neural networks can be better understood through their GMM equivalents, providing insights into the data distribution and feature representations.
+    \item \textbf{Application of Statistical Techniques}: Established statistical methods used in GMM analysis can be applied to neural networks, potentially improving training and evaluation.
+    \item \textbf{Hybrid Models}: Combining neural networks and GMMs can leverage the strengths of both, enhancing performance in tasks like clustering and classification.
+    \item \textbf{Model Decomposition}: Large networks might be decomposable into smaller, context-specific subnetworks, facilitating easier analysis and maintenance.
+    \item \textbf{Efficient Storage and Computation}: Subnetworks can be stored offline and dynamically loaded based on data context, improving memory efficiency and reducing computational overhead.
+    \item \textbf{Scalability in Large-Scale Applications}: This approach can lead to faster inference and more efficient resource utilization in applications dealing with massive datasets.
 \end{itemize}
 
 \subsection{Direct use of Mahalanobis equation}
 
-Equation \ref{eq:mahalanobis_single_component} explicitly incorporates the variance eigenvalue $\lambda$, the unit eigenvector $\mathbf{v}$, and the mean $\boldsymbol{\mu}$. Batch Normalization already makes use of $\lambda$ and $\boldsymbol{\mu}$ \citep{ioffe2015batch}, while the nGPT model employs unit weight vectors, which are analogous to $\mathbf{v}$ \citep{loshchilov2024ngptnormalizedtransformerrepresentation}. Decomposing the standard linear layer equation $y = Wx + b$ in a manner similar to the Mahalanobis equation may lead to improvements in both training speed and representation quality.
+Equation \ref{eq:mahalanobis_single_component} explicitly incorporates the variance eigenvalue $\lambda$, the unit eigenvector $\mathbf{v}$, and the mean $\boldsymbol{\mu}$. Batch Normalization already makes use of $\lambda$ and $\boldsymbol{\mu}$ \citep{ioffe2015batch}, while the nGPT model employs unit weight vectors, which are analogous to $\mathbf{v}$ \citep{loshchilov2024ngptnormalizedtransformerrepresentation}. The success of these techniques suggest there might be further opportunities to decompose the standard linear layer equation $y = Wx + b$ towards the Mahalanobis equation in a way that leads to improvements in training speed and representation quality.
 
