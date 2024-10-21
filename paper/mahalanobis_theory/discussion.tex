@@ -54,7 +54,7 @@ Rather than initializing with random weights, an approach could involve clusteri
 
 \subsection{Model Translation and Componentization}
 
-The interpretation of neurons as principal components of Gaussians suggests a potential mapping between neural networks and hierarchical Gaussian Mixture Models (GMMs) \citep{jacobs1991adaptive}. By performing PCA on the clusters in a GMM, we can extract principal components and means, converting them directly into neurons. This possibility of directly translating neural networks into GMMs offers several potential advantages:
+The interpretation of neurons as principal components of Gaussians suggests a potential mapping between neural networks and hierarchical Gaussian Mixture Models (GMMs) \citep{jacobs1991adaptive}. By performing PCA on the clusters in a GMM, we can extract principal components, converting them directly into neurons. Conversion from neurons to Gaussian representations may also be possible. The process of directly translating betweem neural networks and GMMs offers several potential advantages:
 
 \begin{itemize}
     \item \textbf{Enhanced Interpretability}: Neural networks can be better understood through their GMM equivalents, providing insights into the data distribution and feature representations.

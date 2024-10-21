@@ -77,15 +77,7 @@ We can simplify Equation \eqref{eq:mahalanobis_single_component} to
     D_{M,i}(\mathbf{x}) = \left| \mathbf{W} \mathbf{x} - \mathbf{b} \right|,
 \end{equation}
 
-This is identical to the equation for a linear layer where $\boldsymbol{W}$ represents the weight matrix, $\boldsymbol{b}$ the bias vector, and the Abs function serves as the activation function. Linear nodes with Abs activations can be interpreted as 1d Gaussians along a direction of variance with the decision boundary passing through the mean of the modelled cluster. 
-
-Extending this to all principal components, the Mahalanobis distance can be represented as a multiple linear nodes, each corresponding to a principal component, followed by an Abs activation. This layered structure inherently accounts for the covariance structure of the data, effectively 'whitening' the input.
-
-This is identical to the equation for a linear layer where 
-$\boldsymbol{W}$
-W represents the weight matrix, 
-$\boldsymbol{b}$
-b the bias vector, and the Abs function serves as the activation function. Each linear node with an Abs activation can be interpreted as modeling a one-dimensional Gaussian along a principal component direction, with the decision boundary passing through the mean of the modeled cluster. The layer as a whole represents a subset of principal components from a Gaussian Mixture Model (GMM) that approximates the input distribution. Since each component captures significant features individually, we do not need to aggregate them via an $\ell_2$ norm (full Mahalanobis distance computation). Instead, the subsequent layer clusters these principal component features, effectively forming a new GMM that models the outputs of the first layer.
+This is identical to the equation for a linear layer where $\boldsymbol{W}$ represents the weight matrix, $\boldsymbol{b}$ the bias vector, and the Abs function serves as the activation function. Each linear node with an Abs activation can be interpreted as modeling a one-dimensional Gaussian along a principal component direction, with the decision boundary passing through the mean of the modeled cluster. The layer as a whole represents a subset of principal components from a Gaussian Mixture Model (GMM) that approximates the input distribution. Since each component captures significant features individually, we do not need to aggregate them via an $\ell_2$ norm (full Mahalanobis distance computation). Instead, the subsequent layer clusters these principal component features, effectively forming a new GMM that models the outputs of the first layer.
 
 \subsection{Non-Uniqueness of Whitening}
 
